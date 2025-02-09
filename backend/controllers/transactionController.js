@@ -103,7 +103,7 @@ const createTransaction = async (req, res) => {
             }
         }
 
-        res.status(201).json({ success: true, message: 'Transaction created successfully', data: savedGoal });
+        res.status(201).json({ success: true, message: 'Transaction created successfully', data: savedTransaction });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error creating transaction', error: error.message });
     }
@@ -119,36 +119,102 @@ const deleteTransaction = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid transaction ID" });
         }
 
-        const transaction = await Transaction.findByIdAndDelete(id);
+        // Retrieve the transaction and associated budget allocations
+        const transaction = await Transaction.findById(id);
         if (!transaction) {
-            return res.status(404).json({  success: false, message: "Transaction not found" });
+            return res.status(404).json({ success: false, message: "Transaction not found" });
         }
-        res.status(200).json({ success: true, message: 'Transaction deleted successfully' });
+
+        const transactionBudgets = await TransactionBudget.find({ transactionId: id });
+
+        if (!transactionBudgets.length) {
+            return res.status(404).json({ success: false, message: "No budgets linked to this transaction" });
+        }
+
+        // Determine whether to decrease 'spent' or 'earned' based on transaction type
+        const updateField = transaction.type.toLowerCase() === 'expense' ? 'spent' : 'earned';
+
+        // Reverse the effect of the transaction on each affected budget
+        for (const tb of transactionBudgets) {
+            await Budget.findByIdAndUpdate(tb.budgetId, { $inc: { [updateField]: -tb.amount } });
+        }
+
+        // Delete the transaction-budget relations
+        await TransactionBudget.deleteMany({ transactionId: id });
+
+        // Delete the transaction itself
+        await Transaction.findByIdAndDelete(id);
+
+        res.status(200).json({ success: true, message: "Transaction deleted successfully" });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error deleting transaction', error: error.message });
+        res.status(500).json({ success: false, message: "Error deleting transaction", error: error.message });
     }
 };
+
 
 // Update transaction
 const updateTransaction = async (req, res) => {
     try {
         const { id } = req.params;
+        const { name, totalAmount, category, type, description, date, budgetAllocations } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ success: false, message: "Invalid Transaction ID" });
         }
-    
-        const updatedTransaction = await Transaction.findByIdAndUpdate({_id: id}, {
-            ...req.body
-        }, { new: true, runValidators: true });
-        if (!updatedTransaction) {
+
+        // Retrieve the existing transaction and its allocations
+        const existingTransaction = await Transaction.findById(id);
+        if (!existingTransaction) {
             return res.status(404).json({ success: false, message: "Transaction not found" });
         }
-        res.status(200).json({ success: true, message: 'Transaction updated successfully', data: goal });
+
+        const existingAllocations = await TransactionBudget.find({ transactionId: id });
+
+        if (!existingAllocations.length) {
+            return res.status(404).json({ success: false, message: "No budgets linked to this transaction" });
+        }
+
+        // Determine the correct field to update (spent or earned)
+        const updateField = existingTransaction.type.toLowerCase() === 'expense' ? 'spent' : 'earned';
+
+        // Revert the old transaction effect on each budget
+        for (const alloc of existingAllocations) {
+            await Budget.findByIdAndUpdate(alloc.budgetId, { $inc: { [updateField]: -alloc.amount } });
+        }
+
+        // Remove old allocations
+        await TransactionBudget.deleteMany({ transactionId: id });
+
+        // Update transaction details
+        const updatedTransaction = await Transaction.findByIdAndUpdate(
+            id,
+            { name, totalAmount, category, type, description, date },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedTransaction) {
+            return res.status(500).json({ success: false, message: "Failed to update transaction" });
+        }
+
+        // Apply the new allocation to each budget
+        const newUpdateField = updatedTransaction.type.toLowerCase() === 'expense' ? 'spent' : 'earned';
+
+        for (const alloc of budgetAllocations) {
+            await Budget.findByIdAndUpdate(alloc.budgetId, { $inc: { [newUpdateField]: alloc.amount } });
+            await new TransactionBudget({
+                transactionId: id,
+                budgetId: alloc.budgetId,
+                amount: alloc.amount,
+            }).save();
+        }
+
+        res.status(200).json({ success: true, message: "Transaction updated successfully", data: updatedTransaction });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error updating transaction', error: error.message });
+        res.status(500).json({ success: false, message: "Error updating transaction", error: error.message });
     }
 };
+
+
 
 module.exports = {
     getTransaction,
