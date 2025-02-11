@@ -6,11 +6,12 @@ const {
   deleteTransaction,
   updateTransaction
 } = require('../controllers/transactionController')
+const { authenticate } = require('../middlewares/authMiddleware')
 
 const router = express.Router()
 
 // GET all transactions by User
-router.get('/', getTransactionsByUser)
+router.get('/', authenticate, getTransactionsByUser)
 
 //GET a single transaction
 router.get('/:id', getTransaction)
