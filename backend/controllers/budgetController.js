@@ -34,7 +34,7 @@ const getBudget = async (req, res) => {
 const createBudget = async (req, res) => {
     try {
         const { userId, name, amount, spent, startDate, endDate, closed } = req.body;
-        if (!userId || !name || !amount || spent<0 || !startDate || !endDate || (closed != null)) {
+        if (!userId || !name || !amount || spent<0 || !startDate || !endDate || (closed == null)) {
             return res.status(400).json({ success: false, message: "Required fields are missing"});
         }
     
@@ -103,10 +103,12 @@ const deleteBudget = async (req, res) => {
             return res.status(404).json({ error: "Invalid budget ID" });
         }        
 
-        const deletedBudget = await Budget.findByIdAndDelete(id);
-        if (!deletedBudget) {
+        //Close budget
+        const budget = await Budget.findByIdAndUpdate({_id: id}, {closed: true})
+        if (!budget) {
             return res.status(404).json({  success: false, error: "Budget not found" });
         }
+
         res.status(200).json({ success: true, message: 'Budget deleted successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error deleting budget', error: error.message });
