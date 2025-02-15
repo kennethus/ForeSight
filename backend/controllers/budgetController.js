@@ -31,6 +31,18 @@ const getBudget = async (req, res) => {
 };
 
 // Create a new budget
+/**
+    {
+        userId,
+        name,
+        amount,
+        spent,
+        startDate,
+        endDate,
+        closed
+    }
+*/
+
 const createBudget = async (req, res) => {
     try {
         const { userId, name, amount, spent, startDate, endDate, closed } = req.body;
@@ -103,7 +115,7 @@ const deleteBudget = async (req, res) => {
             return res.status(404).json({ error: "Invalid budget ID" });
         }        
 
-        //Close budget
+        //Set closed to true
         const budget = await Budget.findByIdAndUpdate({_id: id}, {closed: true})
         if (!budget) {
             return res.status(404).json({  success: false, error: "Budget not found" });

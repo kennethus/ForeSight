@@ -1,4 +1,5 @@
 const Transaction = require('../models/TransactionModel');
+const User = require('../models/UserModel')
 const TransactionBudget = require('../models/TransactionBudgetModel')
 const Budget = require('../models/BudgetModel')
 const mongoose = require('mongoose');
@@ -102,6 +103,15 @@ const createTransaction = async (req, res) => {
                 await Budget.findByIdAndUpdate(budgetId, { $inc: { earned: amount } });
             }
         }
+
+        //update Balance if user
+        if (type == 'Expense'){
+            await User.findByIdAndUpdate(userId, { $inc: { balance: totalAmount *  -1 } });
+        } else {
+            await User.findByIdAndUpdate(userId, { $inc: { balance: totalAmount} });
+        }
+
+
 
         res.status(201).json({ success: true, message: 'Transaction created successfully', data: savedTransaction });
     } catch (error) {
