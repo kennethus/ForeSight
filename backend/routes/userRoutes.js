@@ -9,26 +9,29 @@ const {
     loginUser,
     logoutUser
 } = require('../controllers/userController');
+const { authenticate } = require('../middlewares/authMiddleware')
 
-// Route for getting all users
-router.get('/', getUsers);
+//Public routes --------------------------------
 
 // Route for logging User
-router.post('/login', loginUser);
-
+router.post('/auth/login', loginUser);
 // Route for logging out User
-router.post('/logout', logoutUser);
+router.post('/auth/logout', logoutUser);
+// Route for creating/registering a new user
+router.post('/auth/register', createUser);
+
+
+//PRIVATE ----------------------------------------
+// Route for getting all users
+router.get('/', authenticate, getUsers);
 
 // Route for getting a single user by ID
-router.get('/:id', getUser);
-
-// Route for creating/registering a new user
-router.post('/', createUser);
+router.get('/:id', authenticate, getUser);
 
 // Route for deleting a user by ID
-router.delete('/:id', deleteUser);
+router.delete('/:id', authenticate, deleteUser);
 
 // Route for updating a user by ID
-router.patch('/:id', updateUser);
+router.patch('/:id', authenticate, updateUser);
 
 module.exports = router;

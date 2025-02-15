@@ -34,6 +34,10 @@ const BudgetSchema = new mongoose.Schema({
       type: Date,
       required: true,
     },
+    closed: {
+      type: Boolean,
+      required: true
+    }
   },{
     timestamps: true, 
   });

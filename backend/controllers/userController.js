@@ -63,6 +63,7 @@ const createUser = asyncHandler(async (req, res) => {
         });
 
         const savedUser = await newUser.save();
+
         //TO DO: the response should not include password
         res.status(201).json({ 
             success: true, 
@@ -123,7 +124,7 @@ const deleteUser = async (req, res) => {
     
         const user = await User.findByIdAndDelete(id);
         if (!user) {
-            return res.status(400).json({ error: "No such user" });
+            return res.status(400).json({ error: "User not found" });
         }
         res.status(200).json({ success: true, message: 'User deleted successfully' });
     } catch (error) {
