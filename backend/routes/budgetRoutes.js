@@ -6,22 +6,24 @@ const {
   updateBudget,
   deleteBudget
 } = require('../controllers/budgetController')
+const { authenticate } = require('../middlewares/authMiddleware')
+
 const router = express.Router()
 
 // GET all transactions
-router.get('/', getBudgetsByUser)
+router.get('/', authenticate, getBudgetsByUser)
 
 //GET a single transaction
-router.get('/:id', getBudget)
+router.get('/:id', authenticate, getBudget)
 
 // POST a new transaction
-router.post('/', createBudget);
+router.post('/', authenticate, createBudget);
 
 //DELETE a transaction
-router.delete('/:id', deleteBudget)
+router.delete('/:id', authenticate, deleteBudget)
 
 //UPDATE a new transaction
-router.patch('/:id', updateBudget)
+router.patch('/:id', authenticate, updateBudget)
 
 //export all router
 module.exports = router

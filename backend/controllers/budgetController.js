@@ -33,8 +33,8 @@ const getBudget = async (req, res) => {
 // Create a new budget
 const createBudget = async (req, res) => {
     try {
-        const { userId, name, amount, spent, startDate, endDate } = req.body;
-        if (!userId || !name || !amount || spent<0 || !startDate || !endDate) {
+        const { userId, name, amount, spent, startDate, endDate, closed } = req.body;
+        if (!userId || !name || !amount || spent<0 || !startDate || !endDate || (closed != null)) {
             return res.status(400).json({ success: false, message: "Required fields are missing"});
         }
     
@@ -52,7 +52,8 @@ const createBudget = async (req, res) => {
             amount,
             spent,
             startDate,
-            endDate
+            endDate,
+            closed
         });
 
         const savedBudget = await newBudget.save();
