@@ -3,23 +3,10 @@ const router = express.Router();
 const {
     getUsers,
     getUser,
-    createUser,
     deleteUser,
-    updateUser,
-    loginUser,
-    logoutUser
+    updateUser
 } = require('../controllers/userController');
 const { authenticate } = require('../middlewares/authMiddleware')
-
-//Public routes --------------------------------
-
-// Route for logging User
-router.post('/auth/login', loginUser);
-// Route for logging out User
-router.post('/auth/logout', logoutUser);
-// Route for creating/registering a new user
-router.post('/auth/register', createUser);
-
 
 //PRIVATE ----------------------------------------
 // Route for getting all users

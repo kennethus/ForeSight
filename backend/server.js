@@ -6,6 +6,7 @@ const transactionsRoutes = require('./routes/transactionRoutes.js')
 const userRoutes = require('./routes/userRoutes.js')
 const budgetRoutes = require('./routes/budgetRoutes.js')
 const goalRoutes = require('./routes/goalRoutes.js')
+const authRoutes = require('./routes/authRoutes.js')
 
 const app = express()
 
@@ -17,10 +18,11 @@ app.use((req, res, next) => {
 })
 
 //routes
-app.use('/transactions', transactionsRoutes);
-app.use('/users', userRoutes);
-app.use('/budgets', budgetRoutes);
-app.use('/goals', goalRoutes)
+app.use('/api/auth',authRoutes)
+app.use('api/transactions', transactionsRoutes);
+app.use('api/users', userRoutes);
+app.use('api/budgets', budgetRoutes);
+app.use('api/goals', goalRoutes)
 
 //connect db
 mongoose.connect(process.env.MONGO_URI)
