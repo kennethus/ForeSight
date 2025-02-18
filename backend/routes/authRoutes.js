@@ -3,7 +3,8 @@ const router = express.Router();
 const {
     createUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    getCurrentUser
 } = require('../controllers/authController');
 const { authenticate } = require('../middlewares/authMiddleware')
 
@@ -15,6 +16,8 @@ router.post('/login', loginUser);
 router.post('/logout', logoutUser);
 // Route for creating/registering a new user
 router.post('/register', createUser);
+router.get("/me", authenticate, getCurrentUser); // ✅ Auth check route
+
 
 
 
