@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 
 import axios from '../api/axios';
-const LOGIN_URL = 'api/auth/login';
 
 const Login = () => {
     const { setAuth } = useContext(AuthContext);
@@ -30,7 +29,7 @@ const Login = () => {
     
         try {
             const response = await axios.post(
-                LOGIN_URL,
+                `${import.meta.env.VITE_API_URL}/api/auth/login`,
                 JSON.stringify({ email: user, password: pwd }),
                 {
                     headers: { "Content-Type": "application/json" },

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
 
+
 const Dashboard = () => {
     const { auth, setAuth } = useContext(AuthContext); // Get setAuth from context
     const navigate = useNavigate();
@@ -16,7 +17,7 @@ const Dashboard = () => {
     // Logout function using axios
     const logoutHandler = async () => {
         try {
-            const response = await axios.post("http://localhost:3000/api/auth/logout", {}, { withCredentials: true });
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true });
 
             if (response.data.success) {
                 setAuth(null); // Clear auth context

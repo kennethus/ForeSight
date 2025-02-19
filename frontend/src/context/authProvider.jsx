@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('http://localhost:3000/api/auth/me', { withCredentials: true })
+        axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, { withCredentials: true })
             .then(res => {
                 if (res.data.success) {
                     console.log("✅ Authenticated User:", res.data.user);
