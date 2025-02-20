@@ -1,11 +1,9 @@
 import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import AuthContext from "../context/authProvider";
 
-
 const Dashboard = () => {
-    const { auth, setAuth } = useContext(AuthContext); // Get setAuth from context
+    const { auth } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -14,35 +12,10 @@ const Dashboard = () => {
         }
     }, [auth, navigate]);
 
-    // Logout function using axios
-    const logoutHandler = async () => {
-        try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true });
-
-            if (response.data.success) {
-                setAuth(null); // Clear auth context
-                navigate("/", { replace: true }); // Redirect to login page
-            } else {
-                console.error("Logout failed:", response.data.message);
-            }
-        } catch (error) {
-            console.error("Error logging out:", error);
-        } finally {
-            window.location.reload();  // ✅ Forces a hard refresh
-        }
-    };
-
     return (
         <div>
             <h1>Welcome to the Dashboard</h1>
-            {auth?.name ? (
-                <>
-                    <p>Logged in as: {auth.name}</p>
-                    <button onClick={logoutHandler}>Logout</button>
-                </>
-            ) : (
-                <p>You are not logged in.</p>
-            )}
+            {auth?.name ? <p>Logged in as: {auth.name}</p> : <p>You are not logged in.</p>}
         </div>
     );
 };
