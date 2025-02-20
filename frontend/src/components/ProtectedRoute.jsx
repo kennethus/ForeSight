@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/authProvider';
+import { useAuth } from '../utility/useAuth';
 
 const ProtectedRoute = () => {
     const { auth, loading } = useAuth();
@@ -8,6 +8,7 @@ const ProtectedRoute = () => {
         return <p>Loading...</p>;  // 🔹 Prevents redirect before auth is checked
     }
 
+    console.log("Protected route:", auth)
     return auth ? <Outlet /> : <Navigate to="/" />;
 };
 

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import axios from '../api/axios';
 
 const Login = () => {
-    const { setAuth } = useContext(AuthContext);
+    const { setAuth, auth } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const userRef = useRef();
@@ -23,6 +23,12 @@ const Login = () => {
     useEffect(() => {
         setErrMsg('');
     }, [user, pwd])
+
+    useEffect(() => {
+        if (auth) {
+            navigate("/dashboard", { replace: true });
+        }
+    }, [auth, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

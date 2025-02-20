@@ -1,11 +1,11 @@
-import PropTypes from 'prop-types';  // ✅ Import PropTypes
-import { createContext, useContext, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import { createContext, useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-    const [auth, setAuth] = useState(null);  // 🔹 Default is null (not authenticated)
+    const [auth, setAuth] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
             .then(res => {
                 if (res.data.success) {
                     console.log("✅ Authenticated User:", res.data.user);
-                    setAuth(res.data.user);  // 🔹 Set authenticated user
+                    setAuth(res.data.user);
                 }
             })
             .catch(() => {
@@ -23,18 +23,13 @@ export const AuthProvider = ({ children }) => {
             .finally(() => setLoading(false));
     }, []);
 
-    return (
-        <AuthContext.Provider value={{ auth, setAuth, loading }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    const contextValue = useMemo(() => ({ auth, setAuth, loading }), [auth, loading]);
+
+    return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => useContext(AuthContext);
-
-
 AuthProvider.propTypes = {
-  children: PropTypes.node.isRequired,
+    children: PropTypes.node.isRequired,
 };
 
 export default AuthContext;

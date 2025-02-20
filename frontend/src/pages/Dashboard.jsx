@@ -21,12 +21,14 @@ const Dashboard = () => {
 
             if (response.data.success) {
                 setAuth(null); // Clear auth context
-                navigate("/"); // Redirect to login page
+                navigate("/", { replace: true }); // Redirect to login page
             } else {
                 console.error("Logout failed:", response.data.message);
             }
         } catch (error) {
             console.error("Error logging out:", error);
+        } finally {
+            window.location.reload();  // ✅ Forces a hard refresh
         }
     };
 
