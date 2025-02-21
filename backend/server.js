@@ -28,10 +28,10 @@ app.use((req, res, next) => {
 
 //routes
 app.use('/api/auth',authRoutes)
-app.use('api/transactions', transactionsRoutes);
-app.use('api/users', userRoutes);
-app.use('api/budgets', budgetRoutes);
-app.use('api/goals', goalRoutes)
+app.use('/api/transactions', transactionsRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/goals', goalRoutes)
 
 //connect db
 mongoose.connect(process.env.MONGO_URI)

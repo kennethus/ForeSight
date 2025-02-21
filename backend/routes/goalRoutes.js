@@ -5,7 +5,8 @@ const {
     getGoalsByUser,
     getGoal,
     updateGoal,
-    deleteGoal
+    deleteGoal,
+    updateGoalAmount
 } = require('../controllers/goalController');
 const { authenticate } = require('../middlewares/authMiddleware')
 
@@ -21,6 +22,10 @@ router.get('/:id', authenticate, getGoal);
 
 // Update a goal
 router.patch('/:id', authenticate, updateGoal);
+
+//Update goal Amount
+router.patch('/:id/updateAmount', authenticate, updateGoalAmount);
+
 
 // Delete a goal
 router.delete('/:id', authenticate, deleteGoal);

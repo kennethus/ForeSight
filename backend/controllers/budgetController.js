@@ -4,9 +4,9 @@ const mongoose = require('mongoose');
 // Get all budgets for a specific user
 const getBudgetsByUser = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const { userId } = req.query;
         const budgets = await Budget.find({ userId }).sort({ createdAt: -1 });
-        res.status(200).json(budgets);
+        res.status(200).json({success: true, data: budgets});
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching budget', error: error.message });
     }
@@ -24,7 +24,7 @@ const getBudget = async (req, res) => {
         if (!budget) {
             return res.status(404).json({ success: false, message: 'Budget not found' });
         }
-        res.status(200).json(budget);
+        res.status(200).json({success: true, data: budget});
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching budget', error: error.message });
     }

@@ -118,7 +118,7 @@ const generateToken = (res, id) => {
     res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.IS_DEPLOYED === 'true',
-        sameSite: process.env.IS_DEPLOYED === 'true' ? 'none' : 'strict', 
+        sameSite: process.env.IS_DEPLOYED === 'true' ? 'none' : 'lax', 
         maxAge: 3600000 // 1 hr
     });
 
