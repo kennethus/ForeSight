@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 // Create a new goal
 const createGoal = async (req, res) => {
   try {
-    const { userId, name, targetAmount, currentAmount, endDate } = req.body;
+    const { userId, name, targetAmount, currentAmount, endDate, completed } = req.body;
     if (!userId || !name || !targetAmount || currentAmount<0 || !endDate) {
         return res.status(400).json({ success: false, message: "Required fields are missing" });
     }
@@ -24,7 +24,8 @@ const createGoal = async (req, res) => {
         name, 
         targetAmount, 
         currentAmount, 
-        endDate 
+        endDate,
+        completed
     });
     const savedGoal = await goal.save();
 
@@ -37,7 +38,7 @@ const createGoal = async (req, res) => {
 // Get all goals for a specific user
 const getGoalsByUser = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId } = req.query;
     if (!mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ success: false, message: "Invalid User ID" });
     }
@@ -111,10 +112,47 @@ const deleteGoal = async (req, res) => {
   }
 };
 
+// Update a goal amount
+const updateGoalAmount = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currentAmount } = req.body; // Only allow updating currentAmount
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid goal ID" });
+    }
+
+    const goal = await Goal.findById(id);
+    if (!goal) {
+      return res.status(404).json({ success: false, message: 'Goal not found' });
+    }
+
+    // Ensure currentAmount is not higher than the target amount
+    const updatedAmount = goal.currentAmount + parseFloat(currentAmount);
+    // if (updatedAmount > goal.targetAmount) {
+    //   return res.status(400).json({ success: false, message: "Amount exceeds target" });
+    // }
+
+    // Update goal
+    goal.currentAmount = updatedAmount;
+    if (goal.currentAmount >= goal.targetAmount) {
+      goal.completed = true; // Mark goal as completed if target is met
+    }
+    
+    await goal.save();
+
+    res.status(200).json({ success: true, message: 'Goal updated successfully', data: goal });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error updating goal', error: error.message });
+  }
+};
+
+
 module.exports = {
   createGoal,
   getGoalsByUser,
   getGoal,
   updateGoal,
   deleteGoal,
+  updateGoalAmount
 };

@@ -3,10 +3,15 @@ const mongoose = require('mongoose');
 
 // Get all budgets for a specific user
 const getBudgetsByUser = async (req, res) => {
+    console.log("GETING USER BUDGET BY ", req.user._id)
+
     try {
-        const { userId } = req.body;
+        const userId = req.user._id;
+        if (!userId) {
+            return res.status(400).json({ success: false, message: "User ID is required" });
+        }
         const budgets = await Budget.find({ userId }).sort({ createdAt: -1 });
-        res.status(200).json(budgets);
+        res.status(200).json({success: true, data: budgets});
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching budget', error: error.message });
     }
@@ -14,6 +19,8 @@ const getBudgetsByUser = async (req, res) => {
 
 // Get a single budget by ID
 const getBudget = async (req, res) => {
+    console.log("GET BUDGET BY ", req.user._id)
+
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -24,7 +31,7 @@ const getBudget = async (req, res) => {
         if (!budget) {
             return res.status(404).json({ success: false, message: 'Budget not found' });
         }
-        res.status(200).json(budget);
+        res.status(200).json({success: true, data: budget});
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching budget', error: error.message });
     }
@@ -77,6 +84,8 @@ const createBudget = async (req, res) => {
 
 // Update an existing budget
 const updateBudget = async (req, res) => {
+    console.log("UPDATE BUDGET BY ", req.user._id)
+
     try {
         const { id } = req.params;
 
@@ -101,14 +110,14 @@ const updateBudget = async (req, res) => {
             return res.status(404).json({ success: false, error: "Budget not found" });
         }
 
-        res.status(200).json({ success: true, message: 'Budget updated successfully', data: goal });
+        res.status(200).json({ success: true, message: 'Budget updated successfully', data: updatedBudget });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error updating budget', error: error.message });
     }
 };
 
-// Delete a budget
-const deleteBudget = async (req, res) => {
+// Delete a budget (not actually delete)
+const closeBudget = async (req, res) => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -127,10 +136,27 @@ const deleteBudget = async (req, res) => {
     }
 };
 
+const getOpenBudgets = async (req, res) => {
+    console.log("GETING OPEN BUDGET BY ", req.user._id)
+    try {
+        const userId = req.user._id; // Assuming auth middleware sets req.user
+        if (!userId) {
+            return res.status(400).json({ success: false, message: "User ID is required" });
+        }
+
+        const budgets = await Budget.find({ userId, closed: false }).sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: budgets });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error fetching open budgets", error: error.message });
+    }
+};
+
+
 module.exports = {
     getBudgetsByUser,
     getBudget,
     createBudget,
     updateBudget,
-    deleteBudget
+    closeBudget,
+    getOpenBudgets
 };

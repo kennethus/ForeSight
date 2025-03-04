@@ -17,17 +17,22 @@ const getTransactions = async (req, res) => {
 // Get all transactions by User
 const getTransactionsByUser = async (req, res) => {
     try {
-        const { userId } = req.body
+        const { userId } = req.query; // Use query parameters
+
+        console.log("User ID received:", userId);
+
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({ success: false, message: "Invalid User ID" });
         }
 
         const transactions = await Transaction.find({ userId }).sort({ createdAt: -1 });
+
         res.status(200).json({ success: true, data: transactions });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 // Get single transaction
 const getTransaction = async (req, res) => {
