@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
+import GoalModal from "../components/GoalModal"; // Assuming you have a modal component
 
 const Goals = () => {
     const { auth } = useContext(AuthContext);
@@ -10,6 +11,8 @@ const Goals = () => {
     const [goals, setGoals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedGoal, setSelectedGoal] = useState(null);
 
     useEffect(() => {
         if (!auth) {
@@ -42,6 +45,15 @@ const Goals = () => {
         fetchGoals();
     }, [auth._id]);
 
+    const handleGoalAdded = (newGoal) => {
+        setGoals([...goals, newGoal]);
+    };
+
+    const handleAddGoal = () => {
+        setSelectedGoal(null); // Reset selected goal for new entry
+        setIsModalOpen(true);
+    };
+
     if (loading) return <p>Loading financial goals...</p>;
     if (error) return <p>{error}</p>;
 
@@ -50,27 +62,27 @@ const Goals = () => {
             <h2>Financial Goals</h2>
             {goals.length > 0 ? (
                 <table>
-                <thead>
-                    <tr>
-                        <th>Goal Name</th>
-                        <th>Target Amount</th>
-                        <th>Current Savings</th>
-                        <th>Target Date</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {goals.map((goal) => (
+                    <thead>
+                        <tr>
+                            <th>Goal Name</th>
+                            <th>Target Amount</th>
+                            <th>Current Savings</th>
+                            <th>Target Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {goals.map((goal) => (
                             <tr
                                 key={goal._id}
                                 onClick={() => navigate(`/financial-goals/${goal._id}`)}
                                 style={{
                                     cursor: "pointer",
-                                    backgroundColor: "#1E3A8A", // Dark Blue
+                                    backgroundColor: "#1E3A8A",
                                     color: "white",
                                 }}
-                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3B5998")} // Lighter blue on hover
-                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1E3A8A")} // Reset to dark blue
+                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3B5998")}
+                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1E3A8A")}
                             >
                                 <td>{goal.name}</td>
                                 <td>{goal.targetAmount}</td>
@@ -79,12 +91,23 @@ const Goals = () => {
                                 <td>{goal.completed ? "Completed" : "In Progress"}</td>
                             </tr>
                         ))}
-                </tbody>
-            </table>
-            ):(
+                    </tbody>
+                </table>
+            ) : (
                 <h3>You have no financial goals now. Add one!</h3>
             )}
+            <button onClick={handleAddGoal} className="mb-4">Add Goal</button>
+
             
+            {isModalOpen && (
+                <GoalModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    goal={selectedGoal}
+                    onGoalUpdated={handleGoalAdded} // Change `onGoalUpdate` to `onGoalUpdated`
+                />
+            
+            )}
         </div>
     );
 };

@@ -2,16 +2,18 @@ import { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
+import GoalModal from "../components/GoalModal"; // Import the modal
 
 const GoalDetails = () => {
     const { auth } = useContext(AuthContext);
-    const { id } = useParams(); // Get goal ID from URL
+    const { id } = useParams();
     const navigate = useNavigate();
 
     const [goal, setGoal] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [amount, setAmount] = useState(""); // Input for adding savings
+    const [amount, setAmount] = useState("");
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Modal state
 
     useEffect(() => {
         if (!auth) {
@@ -69,6 +71,28 @@ const GoalDetails = () => {
         }
     };
 
+    const handleDeleteGoal = async () => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this goal?");
+        if (!confirmDelete) return;
+
+        try {
+            const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/goals/${id}`, {
+                headers: { "Content-Type": "application/json" },
+                withCredentials: true,
+            });
+
+            if (response.data.success) {
+                alert("Goal deleted successfully");
+                navigate(-1); // Redirect to goals list
+            } else {
+                alert("Failed to delete goal");
+            }
+        } catch (err) {
+            console.error("Error deleting goal:", err.response?.data);
+            alert("Error deleting goal");
+        }
+    };
+
     if (loading) return <p>Loading goal details...</p>;
     if (error) return <p>{error}</p>;
 
@@ -94,7 +118,21 @@ const GoalDetails = () => {
                     </div>
                 )}
             </div>
+
+            <button onClick={() => setIsEditModalOpen(true)}>Edit Goal</button>
+            <button onClick={handleDeleteGoal} style={{ backgroundColor: "red", color: "white", marginLeft: "10px" }}>
+                Delete Goal
+            </button>
             <button onClick={() => navigate(-1)}>Go Back</button>
+
+            {isEditModalOpen && 
+                <GoalModal
+                    isOpen={isEditModalOpen}
+                    goal={goal} 
+                    onClose={() => setIsEditModalOpen(false)} 
+                    onGoalUpdated={(updatedGoal) => setGoal(updatedGoal)}
+                />
+            }
         </div>
     );
 };

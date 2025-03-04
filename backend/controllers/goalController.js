@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 // Create a new goal
 const createGoal = async (req, res) => {
   try {
-    const { userId, name, targetAmount, currentAmount, endDate } = req.body;
+    const { userId, name, targetAmount, currentAmount, endDate, completed } = req.body;
     if (!userId || !name || !targetAmount || currentAmount<0 || !endDate) {
         return res.status(400).json({ success: false, message: "Required fields are missing" });
     }

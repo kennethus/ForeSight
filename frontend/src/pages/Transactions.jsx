@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
+import AddTransactionModal from "../components/AddTransactionModal";
 
 const Transactions = () => {
     const { auth } = useContext(AuthContext);
@@ -10,6 +11,12 @@ const Transactions = () => {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    //Update Transaction without refreshing page
+    const addTransaction = async (newTransaction) => {
+        setTransactions((prevTransactions) => [...prevTransactions, newTransaction]);
+    }
 
     useEffect(() => {
         if (!auth) {
@@ -17,20 +24,16 @@ const Transactions = () => {
         }
     }, [auth, navigate]);
 
-    const userId = auth._id;
-    console.log("Sending User ID: ", userId);
+    
 
     useEffect(() => {
         const fetchTransactions = async () => {
             try {
                 const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/transactions/`, {
-                    params: { userId },
-                    headers: { "Content-Type": "application/json" },
+                    params: { userId: auth._id },
                     withCredentials: true,
                 });
-
-                console.log("Response:", response.data);
-
+    
                 if (response.data.success) {
                     setTransactions(response.data.data);
                 } else {
@@ -43,9 +46,8 @@ const Transactions = () => {
                 setLoading(false);
             }
         };
-
         fetchTransactions();
-    }, [userId]);
+    }, [auth._id]);
 
     if (loading) return <p>Loading transactions...</p>;
     if (error) return <p>{error}</p>;
@@ -53,9 +55,16 @@ const Transactions = () => {
     return (
         <div>
             <h2>Transactions</h2>
+            <AddTransactionModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onTransactionAdded={addTransaction} 
+            />
+
             <table>
                 <thead>
                     <tr>
+                        <th>Name</th>
                         <th>Category</th>
                         <th>Description</th>
                         <th>Total Amount</th>
@@ -63,32 +72,24 @@ const Transactions = () => {
                     </tr>
                 </thead>
                 <tbody>
-                {transactions.length > 0 ? (
-                    transactions.map((transaction) => (
-                        <tr
-                            key={transaction._id}
-                            onClick={() => navigate(`/transactions/${transaction._id}`)}
-                            style={{ 
-                                cursor: "pointer", 
-                                backgroundColor: "#1E3A8A", // Dark Blue
-                                color: "white" // Ensures text remains readable
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3B5998")} // Lighter blue on hover
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1E3A8A")} // Reset to dark blue
-                        >
-                            <td>{transaction.category}</td><td>{transaction.description}</td>
-                            <td>{transaction.totalAmount}</td><td>{new Date(transaction.date).toLocaleString()}</td>
-                        </tr>
-                    ))
-                ) : (
-                    <tr>
-                        <td colSpan="4">No transactions found</td>
-                    </tr>
-                )}
-
-
+                    {transactions.length > 0 ? (
+                        transactions.map((transaction) => (
+                            <tr key={transaction._id} onClick={() => navigate(`/transactions/${transaction._id}`)}>
+                                <td>{transaction.name}</td>
+                                <td>{transaction.category}</td>
+                                <td>{transaction.description}</td>
+                                <td>{transaction.totalAmount}</td>
+                                <td>{new Date(transaction.date).toLocaleDateString()}</td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr><td colSpan="4">No transactions found</td></tr>
+                    )}
                 </tbody>
             </table>
+
+            <button onClick={() => setIsModalOpen(true)}>+ Add Transaction</button>
+
         </div>
     );
 };
