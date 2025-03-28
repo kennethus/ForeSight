@@ -64,11 +64,11 @@ const updateUser = async (req, res) => {
     
         const updatedUser = await User.findByIdAndUpdate({_id: id}, {
             ...req.body
-        }, { new: true, runValidators: true });
+        }, { new: true, runValidators: true }).select('-password');
         if (!updatedUser) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        res.status(200).json({ success: true, message: 'User updated successfully' });
+        res.status(200).json({ success: true, message: 'User updated successfully', data: updatedUser });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error updating user', error: error.message });
     }

@@ -11,6 +11,9 @@ import DashboardLayout from "./components/DashboardLayout";
 import TransactionDetails from "./pages/TransactionDetails";
 import BudgetDetails from "./pages/BudgetDetails";
 import GoalDetails from "./pages/GoalDetails";
+import UserProfile from "./pages/Profile";
+import { Forecast } from "./pages/Forecast";
+import SignUp from "./pages/SignUp";
 
 
 function App() {
@@ -18,9 +21,11 @@ function App() {
       <Router>
           <Routes>
               <Route path="/" element={<Login />} />
+              <Route path="/sign-up" element={<SignUp />} />
               <Route element={<ProtectedRoute />}>
                     <Route element={<DashboardLayout />}>
                         <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/profile" element={<UserProfile />} />
 
                         <Route path="/transactions" element={<Transactions />} />
                             <Route path="/transactions/:id" element={<TransactionDetails />} />
@@ -30,6 +35,9 @@ function App() {
 
                         <Route path="/financial-goals" element={<Goals />} />
                             <Route path="/financial-goals/:id" element={<GoalDetails />} />
+
+                        <Route path="/forecast" element={<Forecast />} />
+
 
                     </Route>
               </Route>

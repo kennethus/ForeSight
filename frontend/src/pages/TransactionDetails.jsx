@@ -9,6 +9,7 @@ const TransactionDetails = () => {
     const { id } = useParams(); // Get transaction ID from URL
     const navigate = useNavigate();
     const [transaction, setTransaction] = useState(null);
+    const [hasClosedBudget, setHasClosedBudget] = useState(false)
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Controls modal
@@ -27,9 +28,21 @@ const TransactionDetails = () => {
                     withCredentials: true,
                 });
 
-                if (response.data.success) {
+                const budgets = await axios.get(`${import.meta.env.VITE_API_URL}/api/transaction-budget/get-budgets`, {
+                    params: { transactionId: id },
+                    withCredentials: true
+                });
+
+                if (response.data.success && budgets.data.success) {
                     console.log("Transaction Details: ", response.data.data)
                     setTransaction(response.data.data);
+                    console.log(budgets.data.data)
+                    
+                    const hasClosed = budgets.data.data.some(budgetRel => budgetRel.budgetId.closed);
+                    console.log("Has Closed:", hasClosed)
+                    setHasClosedBudget(hasClosed);
+
+
                 } else {
                     setError("Transaction not found");
                 }
@@ -78,7 +91,17 @@ const TransactionDetails = () => {
 
             <button onClick={() => navigate(-1)}>Go Back</button>
             <button onClick={() => setIsEditModalOpen(true)}>Edit</button>
-            <button onClick={handleDelete} style={{ color: "red" }}>Delete</button>
+            <button 
+                onClick={handleDelete} 
+                disabled={hasClosedBudget} 
+                style={{ 
+                    color: hasClosedBudget ? "gray" : "red", 
+                    cursor: hasClosedBudget ? "not-allowed" : "pointer", 
+                    opacity: hasClosedBudget ? 0.5 : 1 
+                }}
+            >
+                Delete
+            </button>
 
             {/* Edit Modal */}
             {isEditModalOpen && (

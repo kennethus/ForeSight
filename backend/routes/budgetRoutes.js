@@ -5,7 +5,10 @@ const {
   getBudgetsByUser,
   updateBudget,
   closeBudget,
-  getOpenBudgets
+  getOpenBudgets,
+  deleteBudget,
+  getBudgetByName,
+  updateBudgetAmountById
 } = require('../controllers/budgetController')
 const { authenticate } = require('../middlewares/authMiddleware')
 
@@ -20,7 +23,11 @@ router.post('/', authenticate, createBudget);
 //GET open Budgets by User
 router.get('/openBudgets', authenticate, getOpenBudgets)
 
-//DELETE a transaction
+router.get('/getByName/:name', authenticate, getBudgetByName)
+
+router.patch('/updateAmount/:id', authenticate, updateBudgetAmountById)
+
+//CLOSE a budget
 router.patch('/close/:id', authenticate, closeBudget)
 
 //GET a single transaction
@@ -28,6 +35,8 @@ router.get('/:id', authenticate, getBudget)
 
 //UPDATE a new transaction
 router.patch('/:id', authenticate, updateBudget)
+
+router.delete('/:id', authenticate, deleteBudget)
 
 
 //export all router

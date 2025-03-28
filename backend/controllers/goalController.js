@@ -129,9 +129,6 @@ const updateGoalAmount = async (req, res) => {
 
     // Ensure currentAmount is not higher than the target amount
     const updatedAmount = goal.currentAmount + parseFloat(currentAmount);
-    // if (updatedAmount > goal.targetAmount) {
-    //   return res.status(400).json({ success: false, message: "Amount exceeds target" });
-    // }
 
     // Update goal
     goal.currentAmount = updatedAmount;

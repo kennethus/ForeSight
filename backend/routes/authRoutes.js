@@ -16,9 +16,10 @@ router.post('/login', loginUser);
 router.post('/logout', logoutUser);
 // Route for creating/registering a new user
 router.post('/register', createUser);
-router.get("/me", authenticate, getCurrentUser); // ✅ Auth check route
 
+//Private routes --------------------------------
 
-
+// Route for getting current logged user
+router.get("/me", authenticate, getCurrentUser);
 
 module.exports = router;

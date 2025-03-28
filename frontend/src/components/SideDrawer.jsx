@@ -85,12 +85,14 @@ const SideDrawer = () => {
                 {isOpen && (
                     <>
                         <div style={{ flexGrow: 1 }}>
-                            <h2>Dashboard</h2>
+                            <h2>ForeSight</h2>
                             <ul style={{ listStyle: "none", padding: 0 }}>
                                 <li><Link to="/dashboard" style={linkStyle}>🏠 Home</Link></li>
                                 <li><Link to="/transactions" style={linkStyle}>💰 Transactions</Link></li>
                                 <li><Link to="/budgets" style={linkStyle}>📊 Budgets</Link></li>
                                 <li><Link to="/financial-goals" style={linkStyle}>🎯 Financial Goals</Link></li>
+                                <li><Link to="/forecast" style={linkStyle}>📈 Forecast</Link></li>
+
                             </ul>
                         </div>
 

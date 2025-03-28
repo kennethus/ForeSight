@@ -157,6 +157,8 @@ const deleteTransaction = async (req, res) => {
         // Delete the transaction-budget relations
         await TransactionBudget.deleteMany({ transactionId: id });
 
+        await User.findByIdAndUpdate(req.user._id, { $inc: { balance: transaction.totalAmount } })
+
         // Delete the transaction itself
         await Transaction.findByIdAndDelete(id);
 

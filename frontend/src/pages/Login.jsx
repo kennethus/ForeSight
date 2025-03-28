@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useContext } from 'react';
 import AuthContext from "../context/authProvider"; 
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 
 import axios from '../api/axios';
@@ -46,7 +46,7 @@ const Login = () => {
             console.log("Login response:", response.data);
     
             if (response.data.success) {
-                setAuth(response.data.data); // Store user data
+                setAuth(response.data.user); // Store user data
                 navigate("/dashboard");
             }
         } catch (err) {
@@ -88,7 +88,8 @@ const Login = () => {
                         Need an Account?<br />
                         <span className="line">
                             {/*put router link here*/}
-                            <a href="#">Sign Up</a>
+                            <Link to="/sign-up">Sign Up</Link>
+
                         </span>
                     </p>
                 </section>

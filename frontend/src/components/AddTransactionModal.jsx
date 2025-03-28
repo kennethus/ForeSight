@@ -22,7 +22,7 @@ const AddTransactionModal = ({ isOpen, onClose, onTransactionAdded, existingTran
             const fetchTransactionBudget = async () => {
                 try {
                     setLoading(true);
-                    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/transaction-budget/`, {
+                    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/transaction-budget/get-budgets`, {
                         params: { transactionId: existingTransaction._id },
                         withCredentials: true
                     });
@@ -58,9 +58,7 @@ const AddTransactionModal = ({ isOpen, onClose, onTransactionAdded, existingTran
         } else {
             const fetchBudgets = async () => {
                 try {
-                    setLoading(true);
-                    console.log("Fetching from:", `${import.meta.env.VITE_API_URL}/api/budgets/openBudgets`);
-    
+                    setLoading(true);    
                     const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/budgets/openBudgets`, {
                         headers: { "Content-Type": "application/json" },
                         withCredentials: true,
@@ -161,7 +159,10 @@ const AddTransactionModal = ({ isOpen, onClose, onTransactionAdded, existingTran
                 {loading ? (
                     <p>Loading...</p>
                 ) : (
+                    
                     <form onSubmit={handleSubmit}>
+                        {errorMessage && <p className="error">{errorMessage}</p>}
+
                         <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
                         <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
                         <input type="number" placeholder="Total Amount" value={totalAmount} min="1" onChange={(e) => setTotalAmount(e.target.value)} required />
@@ -224,8 +225,6 @@ const AddTransactionModal = ({ isOpen, onClose, onTransactionAdded, existingTran
                         >
                             + Add Budget
                         </button>
-
-                        {errorMessage && <p className="error">{errorMessage}</p>}
                         <button type="submit">Save Transaction</button>
                         <button type="button" onClick={onClose}>Cancel</button>
                     </form>

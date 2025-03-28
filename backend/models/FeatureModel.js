@@ -10,80 +10,143 @@ const FeatureSchema = new mongoose.Schema(
 
     // Personal Information
     yearLevel: {
-      type: Number,
+      type: String, // Freshman, Sophomore, Junior, Senior, Graduate
       required: true,
-      min: 1,
     },
-    degreeProgram: {
+    personality: {
       type: String,
       required: true,
       trim: true,
     },
-    familyIncome: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
-    // Personal Situation
-    hasRelationship: {
+    inRelationship: {
       type: Boolean,
-      required: true,
+      require: true,
     },
-    hasOrganization: {
-      type: Boolean,
-      required: true,
-    },
-    hasScholarship: {
-      type: Boolean,
-      required: true,
-    },
-    hasJob: {
-      type: Boolean,
-      required: true,
-    },
-
-    // Lifestyle
-    monthlyAllowance: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    studyHours: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    preferredPaymentMethod: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    healthConcern: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    frequencyGoingHome: {
+    homeRegion: {
       type: String,
       required: true,
       trim: true,
     },
 
     // Living Situation
-    housingType: {
+    livingSituation: {
+      type: String, // Dorm, Apartment, Boarding House, Family Home, etc.
+      required: true,
+      trim: true,
+    },
+    dormArea: {
       type: String,
       required: true,
       trim: true,
     },
-    transportation: {
+    numberOfRoommates: { //range
+      type: String,
+      required: true,
+    },
+
+    // Academic & Organization
+    degreeProgram: {
       type: String,
       required: true,
       trim: true,
     },
+    haveOrganization: {
+      type: Boolean,
+      required: true,
+    },
+    studyHoursPerWeek: { //range
+      type: String,
+      required: true,
+    },
+
+    // Financial Situation
+    monthlyAllowance: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    familyMonthlyIncome: { //string
+      type: String,
+      required: true,
+    },
+    hasScholarship: {
+      type: Boolean,
+      required: true,
+    },
+    hasJobOrBusiness: {
+      type: Boolean,
+      required: true,
+    },
+
+    // Lifestyle & Spending
+    mealPreferences: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    frequencyGoingHomePerSemester: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    preferredPaymentMethod: {
+      type: String, 
+      required: true,
+      trim: true,
+    },
+
+    // Health & Concerns
+    hasHealthConcerns: {
+      type: Boolean,
+      required: true,
+    },
+    healthConcernDetails: {
+      type: String,
+      trim: true, // Optional field for specifying concerns
+      default: "None"
+    },
+
+    // Expenses (Numeric values only)
+    livingExpense: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    foodDiningExpense: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    transportationExpense: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    leisureEntertainmentExpense: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    academicExpense: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    // Financial Habits
+    hasTrackExpensesBefore: {
+      type: Boolean,
+      required: true,
+    },
+
+    trackedExpense: {
+      type: String, //URL
+      trim: true,
+      default: "None"
+    }
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt
+    timestamps: true, // Adds createdAt and updatedAt fields automatically
   }
 );
 

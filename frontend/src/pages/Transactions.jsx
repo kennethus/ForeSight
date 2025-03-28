@@ -55,38 +55,41 @@ const Transactions = () => {
     return (
         <div>
             <h2>Transactions</h2>
+            {transactions.length > 0 ? (
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Total Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {
+                            transactions.map((transaction) => (
+                                <tr key={transaction._id} onClick={() => navigate(`/transactions/${transaction._id}`)}>
+                                    <td>{transaction.name}</td>
+                                    <td>{transaction.category}</td>
+                                    <td>{transaction.description}</td>
+                                    <td>{transaction.totalAmount}</td>
+                                    <td>{new Date(transaction.date).toLocaleDateString()}</td>
+                                </tr>
+                            ))
+                       }
+                    </tbody>
+                </table>
+            ):(
+                <h3>You have no transactions now. Add one!</h3>
+            )}
             <AddTransactionModal 
                 isOpen={isModalOpen} 
                 onClose={() => setIsModalOpen(false)} 
                 onTransactionAdded={addTransaction} 
             />
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Total Amount</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {transactions.length > 0 ? (
-                        transactions.map((transaction) => (
-                            <tr key={transaction._id} onClick={() => navigate(`/transactions/${transaction._id}`)}>
-                                <td>{transaction.name}</td>
-                                <td>{transaction.category}</td>
-                                <td>{transaction.description}</td>
-                                <td>{transaction.totalAmount}</td>
-                                <td>{new Date(transaction.date).toLocaleDateString()}</td>
-                            </tr>
-                        ))
-                    ) : (
-                        <tr><td colSpan="4">No transactions found</td></tr>
-                    )}
-                </tbody>
-            </table>
+            
 
             <button onClick={() => setIsModalOpen(true)}>+ Add Transaction</button>
 
