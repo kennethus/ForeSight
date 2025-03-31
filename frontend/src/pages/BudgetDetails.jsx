@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
 import AddBudgetModal from "../components/AddBudgetModal";
+import { HiArrowLeft } from "react-icons/hi";
+
 
 const BudgetDetails = () => {
     const { auth } = useContext(AuthContext);
@@ -147,98 +149,117 @@ const BudgetDetails = () => {
     };
     
 
-    if (loading) return <p>Loading budget details...</p>;
-    if (error) return <p>{error}</p>;
+    if (loading) return <p className="text-center text-gray-500 mt-10">Loading budget details...</p>;
+    if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
 
     return (
-        <div>
-            <h2>Budget Details</h2>
-            {budget ? (
-                <div style={{ backgroundColor: "#1E3A8A", color: "white", padding: "20px", borderRadius: "8px" }}>
-                    <p><strong>Name:</strong> {budget.name}</p>
-                    <p><strong>Initial mount:</strong> {budget.amount}</p>
-                    <p><strong>Spent:</strong> {budget.spent}</p>
-                    <p><strong>Earned:</strong> {budget.earned}</p>
-                    <p><strong>Start Date:</strong> {new Date(budget.startDate).toLocaleDateString()}</p>
-                    <p><strong>End Date:</strong> {budget.name === "Others" ? "--" : new Date(budget.endDate).toLocaleDateString()}</p>
-                    <p><strong>Status:</strong> {budget.closed ? "Closed" : "Open"}</p>
+        <div className="flex flex-col items-center">
+            <div className="bg-white shadow-md rounded-lg w-full p-6 mt-10">
+                {/* Header */}
+                <div className="flex items-center space-x-3 border-b pb-3">
+                    <button onClick={() => navigate(-1)} className="bg-transparent text-gray-600 hover:text-gray-900">
+                        <HiArrowLeft className="w-6 h-6" />
+                    </button>
+                    <h2 className="text-lg font-semibold text-gray-800">Budget Details</h2>
                 </div>
-            ) : (
-                <p>Budget not found.</p>
-            )}
 
-            {/* Edit Budget Button */}
-            <button 
-                onClick={() => setIsModalOpen(true)} 
-                className="edit-budget-btn"
-                disabled={budget?.name === "Others"}  // Disable if budget name is "Balance"
-            >
-                Edit Budget
-            </button>
+                {/* Amount */}
+                <div className="text-center mt-4">
+                    <p className="text-gray-500">Initial Amount</p>
+                    <p className="text-2xl font-bold text-gray-800">₱{budget.amount}</p>
+                </div>
 
-            {/* Conditionally Render Close or Delete Button */}
-            {budgetTransactionObjects.length > 0 ? (
-                <button
-                    onClick={handleCloseBudget}
-                    disabled={budget?.closed || budget?.name === "Others"} // Disable if budget is closed or name is "Balance"
-                    className={`close-budget-btn ${(budget?.closed || budget?.name === "Balance") ? "disabled" : ""}`}
-                >
-                    {budget?.closed ? "Budget Closed" : "Close Budget"}
-                </button>
-            ) : (
-                <button
-                    onClick={handleDeleteBudget} 
-                    className="delete-budget-btn"
-                    disabled={budget?.name === "Others"} // Prevent deletion of Balance budget
-                >
-                    Delete Budget
-                </button>
-            )}
+                {/* Budget Details Grid */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600">
+                    <div>
+                        <p className="text-gray-500">Name</p>
+                        <p className="text-gray-800 font-medium">{budget.name}</p>
+                    </div>
+                    <div>
+                        <p className="text-gray-500">Status</p>
+                        <p className={`font-semibold ${budget.closed ? "text-red-500" : "text-green-500"}`}>
+                            {budget.closed ? "Closed" : "Open"}
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-gray-500">Spent</p>
+                        <p className="text-gray-800">₱{budget.spent}</p>
+                    </div>
+                    <div>
+                        <p className="text-gray-500">Earned</p>
+                        <p className="text-gray-800">₱{budget.earned}</p>
+                    </div>
+                    <div>
+                        <p className="text-gray-500">Start Date</p>
+                        <p className="text-gray-800">{new Date(budget.startDate).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                        <p className="text-gray-500">End Date</p>
+                        <p className="text-gray-800">{budget.name === "Others" ? "--" : new Date(budget.endDate).toLocaleDateString()}</p>
+                    </div>
+                    
+                </div>
 
-            {/* Back Button */}
-            <button 
-                onClick={() => navigate(-1)} 
-                className="back-btn"
-            >
-                Back to Budgets
-            </button>
+                {/* Buttons (Only Render If Budget Name Is NOT "Others") */}
+                {budget?.name !== "Others" && (
+                    <div className="mt-6 flex justify-between">
+                        {/* Edit Budget Button */}
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                        >
+                            Edit Budget
+                        </button>
+
+                        {/* Conditional Rendering for Close or Delete Button */}
+                        {budgetTransactionObjects.length > 0 ? (
+                            <button
+                                onClick={handleCloseBudget}
+                                disabled={budget?.closed}
+                                className={`px-4 py-2 rounded-md ${budget?.closed ? "bg-gray-300 text-gray-500" : "bg-yellow-500 text-white hover:bg-yellow-600"}`}
+                            >
+                                {budget?.closed ? "Budget Closed" : "Close Budget"}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleDeleteBudget}
+                                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                            >
+                                Delete Budget
+                            </button>
+                        )}
+                    </div>
+                )}
 
 
-            {/* ✅ budgetTransactionObjects Table */}
-            <h3>Transactions</h3>
-            {budgetTransactionObjects.length > 0 ? (
-                <table className="budgetTransactionObjects-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Description</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {budgetTransactionObjects.map((budgetTransactionObject) => (
-                            <tr key={budgetTransactionObject.transactionId._id} onClick={() => navigate(`/transactions/${budgetTransactionObject.transactionId._id}`)}>
-                                <td>{budgetTransactionObject.transactionId.name}</td>
-                                <td>{budgetTransactionObject.transactionId.category}</td>
-                                <td>{budgetTransactionObject.transactionId.description}</td>
-                                <td>{budgetTransactionObject.amount}</td>
-                                <td>{new Date(budgetTransactionObject.transactionId.date).toLocaleDateString()}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                <p className="no-budgetTransactionObjects">No transactions found for this budget.</p>
-            )}
+                {/* Transactions List */}
+                <div className="mt-6">
+                    <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Transactions</h3>
+                    {budgetTransactionObjects.length > 0 ? (
+                        <ul className="mt-3 space-y-3">
+                            {budgetTransactionObjects.map((transaction) => (
+                                <li 
+                                    key={transaction.transactionId._id} 
+                                    className="border rounded p-3 cursor-pointer hover:shadow-lg"
+                                    onClick={() => navigate(`/transactions/${transaction.transactionId._id}`)}
+                                >
+                                    <p className="text-gray-700 font-medium">{transaction.transactionId.name}</p>
+                                    <p className="text-gray-600">Amount: ₱{transaction.amount}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-gray-500 mt-3">No transactions found for this budget.</p>
+                    )}
+                </div>
+            </div>
 
             {/* Budget Modal */}
             {isModalOpen && (
-                <AddBudgetModal 
-                    isOpen={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
-                    onBudgetAdded={updateBudget} 
+                <AddBudgetModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onBudgetAdded={updateBudget}
                     existingBudget={budget}
                 />
             )}

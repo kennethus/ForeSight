@@ -2,114 +2,92 @@ import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
-import GoalModal from "../components/GoalModal"; // Assuming you have a modal component
+import GoalModal from "../components/GoalModal";
+import GoalRow from "../components/Goals/GoalRow";
 
 const Goals = () => {
-    const { auth } = useContext(AuthContext);
-    const navigate = useNavigate();
+  const { auth } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    const [goals, setGoals] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedGoal, setSelectedGoal] = useState(null);
+  const [goals, setGoals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useEffect(() => {
-        if (!auth) {
-            navigate("/");
+  useEffect(() => {
+    if (!auth) {
+      navigate("/");
+    }
+  }, [auth, navigate]);
+
+  useEffect(() => {
+    const fetchGoals = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/goals`,
+          {
+            params: { userId: auth._id },
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
+        );
+
+        if (response.data.success) {
+          setGoals(response.data.data);
+        } else {
+          setError("Failed to fetch financial goals");
         }
-    }, [auth, navigate]);
-
-    useEffect(() => {
-        const fetchGoals = async () => {
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/goals`, {
-                    params: { userId: auth._id },
-                    headers: { "Content-Type": "application/json" },
-                    withCredentials: true,
-                });
-
-                if (response.data.success) {
-                    setGoals(response.data.data);
-                } else {
-                    setError("Failed to fetch financial goals");
-                }
-            } catch (err) {
-                console.error("Error fetching goals:", err.response?.data);
-                setError(err.response?.data?.message || "Something went wrong");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchGoals();
-    }, [auth._id]);
-
-    const handleGoalAdded = (newGoal) => {
-        setGoals([...goals, newGoal]);
+      } catch (err) {
+        console.error("Error fetching goals:", err.response?.data);
+        setError(err.response?.data?.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const handleAddGoal = () => {
-        setSelectedGoal(null); // Reset selected goal for new entry
-        setIsModalOpen(true);
-    };
+    fetchGoals();
+  }, [auth._id]);
 
-    if (loading) return <p>Loading financial goals...</p>;
-    if (error) return <p>{error}</p>;
+  const handleGoalAdded = (newGoal) => {
+    setGoals([...goals, newGoal]);
+  };
 
-    return (
-        <div>
-            <h2>Financial Goals</h2>
-            {goals.length > 0 ? (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Goal Name</th>
-                            <th>Target Amount</th>
-                            <th>Current Savings</th>
-                            <th>Target Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {goals.map((goal) => (
-                            <tr
-                                key={goal._id}
-                                onClick={() => navigate(`/financial-goals/${goal._id}`)}
-                                style={{
-                                    cursor: "pointer",
-                                    backgroundColor: "#1E3A8A",
-                                    color: "white",
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3B5998")}
-                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1E3A8A")}
-                            >
-                                <td>{goal.name}</td>
-                                <td>{goal.targetAmount}</td>
-                                <td>{goal.currentAmount}</td>
-                                <td>{new Date(goal.endDate).toLocaleDateString()}</td>
-                                <td>{goal.completed ? "Completed" : "In Progress"}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                <h3>You have no financial goals now. Add one!</h3>
-            )}
-            <button onClick={handleAddGoal} className="mb-4">Add Goal</button>
+  if (loading) return <p>Loading financial goals...</p>;
+  if (error) return <p>{error}</p>;
 
-            
-            {isModalOpen && (
-                <GoalModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    goal={selectedGoal}
-                    onGoalUpdated={handleGoalAdded} // Change `onGoalUpdate` to `onGoalUpdated`
-                />
-            
-            )}
+  return (
+    <div>
+      {/* Display Goals */}
+      {goals.length > 0 ?
+        <div className="space-y-4">
+          {goals.map((goal) => (
+            <GoalRow
+              key={goal._id}
+              goal={goal}
+              onClick={() => navigate(`/financial-goals/${goal._id}`)}
+            />
+          ))}
         </div>
-    );
+      : <h3>You have no financial goals now. Add one!</h3>}
+
+      {/* Add Goal Button */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full hover:bg-blue-700"
+      >
+        + Add Goal
+      </button>
+
+      {/* Goal Modal */}
+      {isModalOpen && (
+        <GoalModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onGoalUpdated={handleGoalAdded}
+        />
+      )}
+    </div>
+  );
 };
 
 export default Goals;

@@ -1,14 +1,15 @@
-import { useState, useEffect, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useContext } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import PropTypes from "prop-types";
 import AuthContext from "../context/authProvider";
+import { FaWallet, FaChartLine, FaSignOutAlt, FaTh, FaBullseye, FaBars, FaMoneyBill } from "react-icons/fa";
 
-const SideDrawer = () => {
-    const [isOpen, setIsOpen] = useState(window.innerWidth >= 768);
+const SideDrawer = ({ isOpen, setIsOpen }) => {
     const { setAuth } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    // Toggle drawer for mobile
+    // Toggle drawer
     const toggleDrawer = () => setIsOpen(!isOpen);
 
     // Handle screen resize
@@ -18,7 +19,7 @@ const SideDrawer = () => {
         };
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
-    }, []);
+    }, [setIsOpen]);
 
     // Logout function
     const logoutHandler = async () => {
@@ -30,7 +31,7 @@ const SideDrawer = () => {
             );
 
             if (response.data.success) {
-                setAuth(null); // Clear auth context
+                setAuth(null);
                 navigate("/", { replace: true });
             } else {
                 console.error("Logout failed:", response.data.message);
@@ -47,84 +48,88 @@ const SideDrawer = () => {
             {/* Mobile Toggle Button */}
             <button
                 onClick={toggleDrawer}
-                style={{
-                    position: "absolute",
-                    top: "10px",
-                    left: isOpen ? "260px" : "10px",
-                    zIndex: 1001,
-                    background: "#2C3E50",
-                    color: "white",
-                    border: "none",
-                    padding: "10px",
-                    cursor: "pointer",
-                    transition: "left 0.3s"
-                }}
+                className={`fixed top-4 left-4 mt-6 z-50 bg-white text-gray-800 p-2 rounded md:hidden transition-all duration-300`}
             >
-                ☰
+                <FaBars size={20} />
             </button>
 
             {/* Sidebar Drawer */}
             <div
-                style={{
-                    width: isOpen ? "250px" : "0",
-                    height: "100vh",
-                    background: "#2C3E50",
-                    color: "white",
-                    position: "fixed",
-                    top: "0",
-                    left: "0",
-                    overflowX: "hidden",
-                    transition: "width 0.3s",
-                    padding: isOpen ? "20px" : "0",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    minHeight: "100vh", // Ensures space for logout button
-                }}
+                className={`fixed top-0 left-0 h-screen bg-white shadow-lg transition-all duration-300 flex flex-col justify-between 
+                    ${isOpen ? "w-64 p-5 z-50" : "w-0 p-0 overflow-hidden"} md:w-64 md:p-5 md:block`}
             >
-                {isOpen && (
-                    <>
-                        <div style={{ flexGrow: 1 }}>
-                            <h2>ForeSight</h2>
-                            <ul style={{ listStyle: "none", padding: 0 }}>
-                                <li><Link to="/dashboard" style={linkStyle}>🏠 Home</Link></li>
-                                <li><Link to="/transactions" style={linkStyle}>💰 Transactions</Link></li>
-                                <li><Link to="/budgets" style={linkStyle}>📊 Budgets</Link></li>
-                                <li><Link to="/financial-goals" style={linkStyle}>🎯 Financial Goals</Link></li>
-                                <li><Link to="/forecast" style={linkStyle}>📈 Forecast</Link></li>
+                {/* Sidebar Content */}
+                <div className={`flex flex-col h-full ${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}>
+                    {/* Logo & Title */}
+                    <div className="flex items-center space-x-2 mt-5 mb-12 justify-center" >  {/* Increased spacing */}
+                        <img src="/logo.png" alt="Logo" className="h-10 w-10" />
+                        <h2 className="text-lg font-bold text-gray-800">ForeSight</h2>
+                    </div>
 
-                            </ul>
-                        </div>
+                    {/* Navigation - Centered Links */}
+                    <div className="flex-1 flex flex-row justify-center">
+                        <nav className="flex flex-col gap-y-6">  {/* Increased spacing */}
+                            <NavItem to="/dashboard" icon={<FaTh />} text="Dashboard" />
+                            <NavItem to="/transactions" icon={<FaWallet />} text="Transactions" />
+                            <NavItem to="/budgets" icon={<FaMoneyBill />} text="Budgets" />
+                            <NavItem to="/financial-goals" icon={<FaBullseye />} text="Savings" />
+                            <NavItem to="/forecast" icon={<FaChartLine />} text="Forecast" />
+                        </nav>
+                    </div>
 
-                        {/* Logout Button - Moved Up & Made Clickable */}
-                        <button
-                            onClick={logoutHandler}
-                            style={{
-                                background: "red",
-                                color: "white",
-                                border: "none",
-                                padding: "10px",
-                                cursor: "pointer",
-                                width: "100%",
-                                textAlign: "center",
-                                marginBottom: "20px", // Adds space above the button
-                            }}
-                        >
-                            🔒 Logout
-                        </button>
-                    </>
-                )}
+                    {/* Logout Button */}
+                    <button
+                        onClick={logoutHandler}
+                        className="mt-auto flex items-center space-x-3 bg-white text-red-500 hover:text-red-600 transition-colors duration-300"
+                    >
+                        <FaSignOutAlt size={18} />
+                        <span>Log Out</span>
+                    </button>
+                </div>
+
+
             </div>
+
+            {/* Overlay when sidebar is open on mobile */}
+            {isOpen && (
+                <div
+                    onClick={toggleDrawer}
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                >
+                </div>
+            )}
         </>
     );
 };
 
-// Style for links
-const linkStyle = {
-    display: "block",
-    color: "white",
-    textDecoration: "none",
-    padding: "10px 0"
+/** 
+ * Navigation Item Component 
+ */
+const NavItem = ({ to, icon, text }) => {
+    const location = useLocation();
+    const isActive = location.pathname.startsWith(to); // Ensures "transactions" stays active
+
+    return (
+        <Link
+            to={to}
+            className={`flex items-center space-x-3 transition-colors duration-300 active:text-blue-900 
+                ${isActive ? "text-blue-600 font-semibold" : "text-gray-700 hover:text-blue-500"}`}
+        >
+            <span className="text-lg">{icon}</span>
+            <span>{text}</span>
+        </Link>
+    );
+};
+
+NavItem.propTypes = {
+    to: PropTypes.string.isRequired,
+    icon: PropTypes.node.isRequired,
+    text: PropTypes.string.isRequired,
+};
+
+SideDrawer.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    setIsOpen: PropTypes.func.isRequired,
 };
 
 export default SideDrawer;
