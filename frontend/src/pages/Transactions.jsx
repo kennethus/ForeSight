@@ -52,7 +52,7 @@ const Transactions = () => {
       }
     };
     fetchTransactions();
-  }, [auth._id]);
+  }, [auth]);
 
   if (loading) return <p>Loading transactions...</p>;
   if (error) return <p>{error}</p>;

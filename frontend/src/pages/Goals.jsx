@@ -49,7 +49,7 @@ const Goals = () => {
   }, [auth._id]);
 
   const handleGoalAdded = (newGoal) => {
-    setGoals([...goals, newGoal]);
+    setGoals([newGoal, ...goals]);
   };
 
   if (loading) return <p>Loading financial goals...</p>;

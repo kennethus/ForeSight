@@ -4,6 +4,8 @@ import axios from "axios";
 import AuthContext from "../context/authProvider";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import { HiArrowLeft, HiPencil } from "react-icons/hi";
+import GoalModal from "../components/GoalModal"; // Ensure correct path
 
 const GoalDetails = () => {
   const { auth } = useContext(AuthContext);
@@ -14,6 +16,7 @@ const GoalDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [amount, setAmount] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (!auth) navigate("/");
@@ -36,7 +39,9 @@ const GoalDetails = () => {
           setError("Failed to fetch goal details");
         }
       } catch (err) {
-        setError("Failed to fetch goal details: ", err.response?.message);
+        setError(
+          "Failed to fetch goal details: " + (err.response?.message || "")
+        );
       } finally {
         setLoading(false);
       }
@@ -62,14 +67,20 @@ const GoalDetails = () => {
       );
 
       if (response.data.success) {
-        setGoal(response.data.data);
+        setGoal(response.data.data); // Update goal state directly
         setAmount("");
       } else {
         alert("Failed to update goal");
       }
     } catch (err) {
-      alert("Error updating goal: ", err.response?.message);
+      alert("Error updating goal: " + (err.response?.message || ""));
     }
+  };
+
+  // Function to update goal details after editing
+  const handleGoalUpdate = (updatedGoal) => {
+    setGoal(updatedGoal); // Directly update goal state
+    setIsEditModalOpen(false); // Close modal
   };
 
   if (loading) return <p>Loading goal details...</p>;
@@ -81,26 +92,49 @@ const GoalDetails = () => {
   const remaining = target - saved;
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-xl">
+    <div className="flex justify-center">
+      <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
         {/* Header: Goal Name & Target Amount */}
-        <div className="flex justify-between items-center mb-4">
-          <div>
+        <div className="flex items-center justify-between pb-3">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="bg-transparent text-gray-600 hover:text-gray-900"
+          >
+            <HiArrowLeft className="w-6 h-6" />
+          </button>
+
+          {/* Goal Information */}
+          <div className="flex-grow text-center">
             <p className="text-sm font-semibold text-gray-600">
               UNTIL{" "}
               {new Date(goal.endDate)
-                .toLocaleString("en-US", { month: "short", year: "numeric" })
+                .toLocaleString("en-US", {
+                  month: "short",
+                  day: "2-digit",
+                  year: "numeric",
+                })
                 .toUpperCase()}
             </p>
             <h2 className="text-lg font-bold">{goal.name}</h2>
           </div>
-          <p className="text-green-600 font-bold text-lg">
-            ₱{target.toLocaleString()}
-          </p>
+
+          {/* Edit Button */}
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="bg-transparent text-gray-700 hover:bg-gray-300 p-2 rounded-full"
+          >
+            <HiPencil className="w-5 h-5" />
+          </button>
         </div>
 
+        {/* Target Amount */}
+        <p className="text-green-600 font-bold text-lg text-center">
+          ₱{target.toLocaleString()}
+        </p>
+
         {/* Progress Circle */}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center mt-4">
           <div className="w-40">
             <CircularProgressbar
               value={savedPercentage}
@@ -113,8 +147,8 @@ const GoalDetails = () => {
             />
           </div>
 
-          {/* Saved & Remaining Labels - Responsive Layout */}
-          <div className="w-full flex flex-col sm:flex-row items-center justify-between sm:px-12 mt-4 sm:mt-0 text-center sm:text-left gap-4">
+          {/* Saved & Remaining Labels */}
+          <div className="w-full flex flex-col sm:flex-row items-center justify-between sm:px-12 mt-4 text-center sm:text-left gap-4">
             <div className="flex flex-col items-center">
               <p className="text-xs font-semibold text-gray-500">SAVED</p>
               <p className="text-sm font-bold text-gray-800">
@@ -147,6 +181,16 @@ const GoalDetails = () => {
           </button>
         </div>
       </div>
+
+      {/* Goal Edit Modal */}
+      {isEditModalOpen && (
+        <GoalModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          goal={goal}
+          onGoalUpdated={handleGoalUpdate} // Pass function to update goal
+        />
+      )}
     </div>
   );
 };

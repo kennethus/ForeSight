@@ -5,13 +5,31 @@ import AuthContext from "../context/authProvider";
 
 const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
   const modalRef = useRef(null);
+  const { auth } = useContext(AuthContext);
+
+  // Controlled input state
   const [name, setName] = useState(goal?.name || "");
   const [targetAmount, setTargetAmount] = useState(goal?.targetAmount || "");
   const [endDate, setEndDate] = useState(
     goal ? new Date(goal.endDate).toISOString().split("T")[0] : ""
   );
-  const { auth } = useContext(AuthContext);
 
+  // Reset state when modal opens
+  useEffect(() => {
+    if (goal) {
+      setName(goal.name || "");
+      setTargetAmount(goal.targetAmount || "");
+      setEndDate(
+        goal.endDate ? new Date(goal.endDate).toISOString().split("T")[0] : ""
+      );
+    } else {
+      setName("");
+      setTargetAmount("");
+      setEndDate("");
+    }
+  }, [goal, isOpen]);
+
+  // Open/close modal
   useEffect(() => {
     if (isOpen) {
       modalRef.current?.showModal();
@@ -26,18 +44,20 @@ const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
     try {
       let response;
       if (goal) {
+        // Update existing goal
         response = await axios.patch(
           `${import.meta.env.VITE_API_URL}/api/goals/${goal._id}`,
-          { name, targetAmount, endDate },
+          { name, targetAmount: Number(targetAmount), endDate },
           { withCredentials: true }
         );
       } else {
+        // Create new goal
         response = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/goals/`,
           {
             userId: auth._id,
             name,
-            targetAmount,
+            targetAmount: Number(targetAmount),
             currentAmount: 0,
             endDate,
             completed: false,
@@ -50,11 +70,7 @@ const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
         alert(
           goal ? "Goal updated successfully!" : "Goal created successfully!"
         );
-        try {
-          onGoalUpdated(response.data.data); // Safely update the UI state
-        } catch (updateError) {
-          console.error("Error updating state:", updateError);
-        }
+        onGoalUpdated(response.data.data); // Update the parent state
         onClose();
       } else {
         alert(goal ? "Failed to update goal." : "Failed to create goal.");
@@ -71,7 +87,9 @@ const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
       className="fixed w-md md:w-l lg:w-xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-black bg-opacity-50"
     >
       <div className="bg-white w-full max-w-lg md:max-w-xl lg:max-w-2xl min-h-sm p-5 items-center justify-center rounded-lg shadow-lg overflow-y-auto max-h-[90vh]">
-        <h2 className="text-xl font-semibold text-center mb-4">Add Goal</h2>
+        <h2 className="text-xl font-semibold text-center mb-4">
+          {goal ? "Edit Goal" : "Add Goal"}
+        </h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
           <input
@@ -104,7 +122,7 @@ const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
           {/* Submit & Cancel Buttons */}
           <div className="flex flex-col sm:flex-row justify-between gap-2">
             <button type="submit" className="btn-primary rounded-full">
-              Save Changes
+              {goal ? "Update Goal" : "Save Goal"}
             </button>
             <button
               type="button"

@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
@@ -10,8 +11,14 @@ const AddTransactionModal = ({
   existingTransaction,
 }) => {
   const { auth } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const [user, setUser] = useState(null);
+
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
+
   const [name, setName] = useState(existingTransaction?.name || "");
   const [description, setDescription] = useState(
     existingTransaction?.description || ""
@@ -31,6 +38,30 @@ const AddTransactionModal = ({
   ]);
   const [errorMessage, setErrorMessage] = useState("");
   const modalRef = useRef(null);
+
+  useEffect(() => {
+    if (!auth) navigate("/");
+  }, [auth, navigate]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!auth) return navigate("/");
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/users/${auth._id}`,
+          { withCredentials: true }
+        );
+        if (response.data.success) {
+          setUser(response.data.data);
+        }
+      } catch (err) {
+        setErrorMessage(err.response?.data?.message || "Error fetching user");
+      } finally {
+        setUserLoading(false);
+      }
+    };
+    fetchUser();
+  }, [auth, navigate]);
 
   useEffect(() => {
     if (existingTransaction) {
@@ -134,6 +165,7 @@ const AddTransactionModal = ({
             type,
             date,
             budgetAllocations,
+            balance: user.balance,
           },
           { withCredentials: true }
         );
@@ -151,6 +183,7 @@ const AddTransactionModal = ({
             type,
             date,
             budgetAllocations,
+            balance: user.balance,
           },
           { withCredentials: true }
         );
@@ -213,7 +246,7 @@ const AddTransactionModal = ({
         <h2 className="text-xl font-semibold text-center mb-4">
           {existingTransaction ? "Edit" : "Add"} Transaction
         </h2>
-        {loading ?
+        {loading || userLoading ?
           <p className="text-center">Loading...</p>
         : <form onSubmit={handleSubmit} className="flex flex-col gap-2">
             {errorMessage && (
