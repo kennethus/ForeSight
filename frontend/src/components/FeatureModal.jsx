@@ -29,11 +29,6 @@ const FeatureModal = ({ isOpen, onClose, feature }) => {
       preferredPaymentMethod: "",
       hasHealthConcerns: false,
       healthConcernDetails: "",
-      livingExpense: 0,
-      foodDiningExpense: 0,
-      transportationExpense: 0,
-      leisureEntertainmentExpense: 0,
-      academicExpense: 0,
       hasTrackExpensesBefore: false,
     }
   );
@@ -539,33 +534,6 @@ const FeatureModal = ({ isOpen, onClose, feature }) => {
                 disabled={!isEditing}
               />
             </div>
-
-            {/* Expenses */}
-            <h3>Your Monthly Expenses</h3>
-
-            {[
-              { id: "livingExpense", label: "Living Expense" },
-              { id: "foodDiningExpense", label: "Food & Dining Expense" },
-              { id: "transportationExpense", label: "Transportation Expense" },
-              {
-                id: "leisureEntertainmentExpense",
-                label: "Leisure & Entertainment Expense",
-              },
-              { id: "academicExpense", label: "Academic Expense" },
-            ].map(({ id, label }) => (
-              <div key={id} className="form-group">
-                <label htmlFor={id}>{label}</label>
-                <input
-                  id={id}
-                  type="number"
-                  name={id}
-                  value={formData[id]}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="input-field"
-                />
-              </div>
-            ))}
 
             <div className="flex flex-col sm:flex-row gap-2">
               <label>
