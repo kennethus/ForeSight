@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const FeatureSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
 
@@ -39,7 +39,8 @@ const FeatureSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    numberOfRoommates: { //range
+    numberOfRoommates: {
+      //range
       type: String,
       required: true,
     },
@@ -54,7 +55,8 @@ const FeatureSchema = new mongoose.Schema(
       type: Boolean,
       required: true,
     },
-    studyHoursPerWeek: { //range
+    studyHoursPerWeek: {
+      //range
       type: String,
       required: true,
     },
@@ -65,7 +67,8 @@ const FeatureSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    familyMonthlyIncome: { //string
+    familyMonthlyIncome: {
+      //string
       type: String,
       required: true,
     },
@@ -90,7 +93,7 @@ const FeatureSchema = new mongoose.Schema(
       trim: true,
     },
     preferredPaymentMethod: {
-      type: String, 
+      type: String,
       required: true,
       trim: true,
     },
@@ -103,34 +106,7 @@ const FeatureSchema = new mongoose.Schema(
     healthConcernDetails: {
       type: String,
       trim: true, // Optional field for specifying concerns
-      default: "None"
-    },
-
-    // Expenses (Numeric values only)
-    livingExpense: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    foodDiningExpense: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    transportationExpense: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    leisureEntertainmentExpense: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    academicExpense: {
-      type: Number,
-      required: true,
-      min: 0,
+      default: "None",
     },
 
     // Financial Habits
@@ -142,12 +118,12 @@ const FeatureSchema = new mongoose.Schema(
     trackedExpense: {
       type: String, //URL
       trim: true,
-      default: "None"
-    }
+      default: "None",
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields automatically
   }
 );
 
-module.exports = mongoose.model('Feature', FeatureSchema);
+module.exports = mongoose.model("Feature", FeatureSchema);

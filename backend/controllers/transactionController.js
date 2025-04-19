@@ -37,6 +37,33 @@ const getTransactionsByUser = async (req, res) => {
   }
 };
 
+const getPreviousTransactionsByUser = async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    console.log("User ID received:", userId);
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid User ID" });
+    }
+
+    // Calculate the date 3 months ago from today
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    const transactions = await Transaction.find({
+      userId,
+      date: { $gte: threeMonthsAgo }, // Only transactions from the last 3 months
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, data: transactions });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // Get single transaction
 const getTransaction = async (req, res) => {
   try {
@@ -358,4 +385,5 @@ module.exports = {
   createTransaction,
   deleteTransaction,
   updateTransaction,
+  getPreviousTransactionsByUser,
 };
