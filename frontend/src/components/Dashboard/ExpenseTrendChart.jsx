@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import PropTypes from "prop-types";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
@@ -12,8 +12,8 @@ import {
   Filler,
   Legend,
 } from "chart.js";
+import { format, subMonths, addMonths } from "date-fns";
 
-// Register chart components
 Chart.register(
   LineElement,
   PointElement,
@@ -24,43 +24,37 @@ Chart.register(
   Legend
 );
 
-const ExpenseTrendChart = ({ transactions }) => {
+const ExpenseTrendChart = ({ monthlyTransactions, onMonthChange, loading }) => {
   const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
-  const currentYear = currentDate.getFullYear();
+  const [selectedDate, setSelectedDate] = useState(currentDate);
 
-  // Function to get month name
-  const getMonthName = (month) =>
-    new Date(currentYear, month).toLocaleString("default", { month: "long" });
+  useEffect(() => {
+    onMonthChange(selectedDate);
+  }, [selectedDate]);
 
-  // Function to navigate months
-  const changeMonth = (direction) => {
-    setSelectedMonth((prevMonth) => {
-      let newMonth = prevMonth + direction;
-      return newMonth >= 0 && newMonth <= currentDate.getMonth() ?
-          newMonth
-        : prevMonth;
-    });
+  const handlePrevMonth = () => {
+    setSelectedDate((prev) => subMonths(prev, 1));
   };
 
-  // Get transactions for the selected month
-  const filteredTransactions = transactions.filter(({ date }) => {
-    const transactionDate = new Date(date);
-    return (
-      transactionDate.getMonth() === selectedMonth &&
-      transactionDate.getFullYear() === currentYear
-    );
-  });
+  const handleNextMonth = () => {
+    if (
+      selectedDate.getMonth() < currentDate.getMonth() ||
+      selectedDate.getFullYear() < currentDate.getFullYear()
+    ) {
+      setSelectedDate((prev) => addMonths(prev, 1));
+    }
+  };
 
-  // Aggregate total expenses per day
+  const month = selectedDate.getMonth();
+  const year = selectedDate.getFullYear();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
   const dailyExpenses = {};
-  filteredTransactions.forEach(({ date, totalAmount }) => {
+  monthlyTransactions?.forEach(({ date, totalAmount }) => {
     const day = new Date(date).getDate();
     dailyExpenses[day] = (dailyExpenses[day] || 0) + totalAmount;
   });
 
-  // Generate labels and data for the entire month
-  const daysInMonth = new Date(currentYear, selectedMonth + 1, 0).getDate();
   const labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
   const dataPoints = labels.map((_, i) => dailyExpenses[i + 1] || 0);
 
@@ -68,7 +62,7 @@ const ExpenseTrendChart = ({ transactions }) => {
     labels,
     datasets: [
       {
-        label: `Daily Expenses (${getMonthName(selectedMonth)})`,
+        label: `Daily Expenses – ${format(selectedDate, "MMMM yyyy")}`,
         data: dataPoints,
         borderColor: "#FF6384",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
@@ -78,53 +72,59 @@ const ExpenseTrendChart = ({ transactions }) => {
     ],
   };
 
+  const isCurrentMonth =
+    selectedDate.getMonth() === currentDate.getMonth() &&
+    selectedDate.getFullYear() === currentDate.getFullYear();
+
   return (
     <div className="bg-white shadow-md rounded-lg p-6 w-full md:w-3/4 mx-auto">
       <div className="flex justify-between items-center mb-4">
-        {/* Previous Month Button (Left Arrow) */}
         <button
-          onClick={() => changeMonth(-1)}
-          className={`p-2 rounded-full bg-transparent ${
-            selectedMonth === 0 ?
-              "text-gray-400 cursor-not-allowed"
-            : "text-gray-800 hover:bg-gray-200"
+          onClick={handlePrevMonth}
+          className={`p-2 rounded-full bg-transparent text-gray-800 hover:bg-gray-200 ${
+            loading ? "opacity-50 cursor-not-allowed" : ""
           }`}
-          disabled={selectedMonth === 0}
+          disabled={loading}
         >
           <FaArrowLeft size={20} />
         </button>
 
-        {/* Month Label */}
         <h3 className="text-md font-semibold">
-          {getMonthName(selectedMonth)} Expense Trend
+          {format(selectedDate, "MMMM yyyy")} Expense Trend
         </h3>
 
-        {/* Next Month Button (Right Arrow) */}
         <button
-          onClick={() => changeMonth(1)}
+          onClick={handleNextMonth}
           className={`p-2 rounded-full bg-transparent ${
-            selectedMonth === currentDate.getMonth() ?
+            isCurrentMonth ?
               "text-gray-400 cursor-not-allowed"
-            : "text-gray-800 hover:bg-gray-200"
-          }`}
-          disabled={selectedMonth === currentDate.getMonth()}
+            : "hover:bg-gray-200 text-gray-800"
+          } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+          disabled={isCurrentMonth}
         >
           <FaArrowRight size={20} />
         </button>
       </div>
 
-      <div className="w-full h-64">
-        <Line
-          data={chartData}
-          options={{ responsive: true, maintainAspectRatio: false }}
-        />
+      <div className="w-full h-64 flex items-center justify-center">
+        {loading ?
+          <p className="text-gray-500">Loading chart data...</p>
+        : dataPoints.every((point) => point === 0) ?
+          <p className="text-gray-500">No expenses recorded this month.</p>
+        : <Line
+            data={chartData}
+            options={{ responsive: true, maintainAspectRatio: false }}
+          />
+        }
       </div>
     </div>
   );
 };
 
 ExpenseTrendChart.propTypes = {
-  transactions: PropTypes.array.isRequired,
+  monthlyTransactions: PropTypes.array.isRequired,
+  onMonthChange: PropTypes.func.isRequired,
+  loading: PropTypes.bool,
 };
 
 export default ExpenseTrendChart;

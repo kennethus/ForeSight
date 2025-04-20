@@ -13,10 +13,59 @@ const Dashboard = () => {
   const [userLoading, setUserLoading] = useState(true);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [breakdownData, setBreakdownData] = useState({});
+  const [expenseData, setExpenseData] = useState([]);
+  const [expenseLoading, setExpenseLoading] = useState(true);
+  const [breakdownLoading, setBreakdownLoading] = useState(false);
+
+  const fetchBreakdown = async (monthDate) => {
+    setBreakdownLoading(true);
+    try {
+      const month = monthDate.getMonth() + 1;
+      const year = monthDate.getFullYear();
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/transactions/breakdown?month=${month}&year=${year}`,
+        { withCredentials: true }
+      );
+
+      setBreakdownData(res.data.data);
+    } catch (err) {
+      console.error("Failed to fetch breakdown:", err);
+      setBreakdownData({});
+    } finally {
+      setBreakdownLoading(false);
+    }
+  };
+
+  const fetchMonthlyExpenses = async (monthDate) => {
+    setExpenseLoading(true); // ✅ Set loading true
+    try {
+      const month = monthDate.getMonth() + 1;
+      const year = monthDate.getFullYear();
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/transactions/monthlyExpenses?month=${month}&year=${year}`,
+        { withCredentials: true }
+      );
+
+      setExpenseData(res.data.data);
+    } catch (err) {
+      console.error("Failed to fetch monthly expenses:", err);
+      setExpenseData([]); // fallback to empty data
+    } finally {
+      setExpenseLoading(false); // ✅ Done loading
+    }
+  };
 
   useEffect(() => {
     if (!auth) navigate("/");
   }, [auth, navigate]);
+
+  useEffect(() => {
+    fetchBreakdown(new Date());
+    fetchMonthlyExpenses(new Date());
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -42,7 +91,7 @@ const Dashboard = () => {
     const fetchTransactions = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/transactions/`,
+          `${import.meta.env.VITE_API_URL}/api/transactions/expense`,
           { params: { userId: auth._id }, withCredentials: true }
         );
         if (response.data.success) {
@@ -59,18 +108,8 @@ const Dashboard = () => {
     fetchTransactions();
   }, [auth]);
 
-  const getCategoryBreakdown = () => {
-    const categoryMap = {};
-    transactions.forEach(({ category, totalAmount }) => {
-      categoryMap[category] = (categoryMap[category] || 0) + totalAmount;
-    });
-    return categoryMap;
-  };
-
   if (userLoading || transactionsLoading) return <p>Loading dashboard...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
-
-  const categoryBreakdown = getCategoryBreakdown();
 
   return (
     <div>
@@ -86,8 +125,16 @@ const Dashboard = () => {
 
       {transactions.length > 0 ?
         <div className="flex flex-col items-center gap-6">
-          <CategoryChart categoryBreakdown={categoryBreakdown} />
-          <ExpenseTrendChart transactions={transactions} />{" "}
+          <CategoryChart
+            categoryBreakdown={breakdownData}
+            onMonthChange={fetchBreakdown}
+            loading={breakdownLoading}
+          />
+          <ExpenseTrendChart
+            monthlyTransactions={expenseData}
+            onMonthChange={fetchMonthlyExpenses}
+            loading={expenseLoading}
+          />
         </div>
       : <p className="text-gray-500 mt-4">
           No transactions available to display.

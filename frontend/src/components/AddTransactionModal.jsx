@@ -13,12 +13,8 @@ const AddTransactionModal = ({
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [user, setUser] = useState(null);
-
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [userLoading, setUserLoading] = useState(true);
-
   const [name, setName] = useState(existingTransaction?.name || "");
   const [description, setDescription] = useState(
     existingTransaction?.description || ""
@@ -41,26 +37,6 @@ const AddTransactionModal = ({
 
   useEffect(() => {
     if (!auth) navigate("/");
-  }, [auth, navigate]);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!auth) return navigate("/");
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/users/${auth._id}`,
-          { withCredentials: true }
-        );
-        if (response.data.success) {
-          setUser(response.data.data);
-        }
-      } catch (err) {
-        setErrorMessage(err.response?.data?.message || "Error fetching user");
-      } finally {
-        setUserLoading(false);
-      }
-    };
-    fetchUser();
   }, [auth, navigate]);
 
   useEffect(() => {
@@ -165,7 +141,6 @@ const AddTransactionModal = ({
             type,
             date,
             budgetAllocations,
-            balance: user.balance,
           },
           { withCredentials: true }
         );
@@ -183,7 +158,6 @@ const AddTransactionModal = ({
             type,
             date,
             budgetAllocations,
-            balance: user.balance,
           },
           { withCredentials: true }
         );
@@ -246,7 +220,7 @@ const AddTransactionModal = ({
         <h2 className="text-xl font-semibold text-center mb-4">
           {existingTransaction ? "Edit" : "Add"} Transaction
         </h2>
-        {loading || userLoading ?
+        {loading ?
           <p className="text-center">Loading...</p>
         : <form onSubmit={handleSubmit} className="flex flex-col gap-2">
             {errorMessage && (
