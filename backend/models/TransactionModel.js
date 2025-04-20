@@ -36,11 +36,6 @@ const transactionSchema = new Schema(
       required: true,
       default: Date.now,
     },
-    balance: {
-      type: Number,
-      required: true,
-      trim: true,
-    },
   },
   {
     timestamps: true,

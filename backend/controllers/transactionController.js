@@ -14,10 +14,9 @@ const getTransactions = async (req, res) => {
   }
 };
 
-// Get all transactions by User
 const getTransactionsByUser = async (req, res) => {
   try {
-    const { userId } = req.query; // Use query parameters
+    const { userId, page = 1, limit = 10 } = req.query;
 
     console.log("User ID received:", userId);
 
@@ -27,13 +26,122 @@ const getTransactionsByUser = async (req, res) => {
         .json({ success: false, message: "Invalid User ID" });
     }
 
-    const transactions = await Transaction.find({ userId }).sort({
-      createdAt: -1,
+    const skip = (page - 1) * limit;
+
+    // Total count for pagination metadata
+    const total = await Transaction.countDocuments({ userId });
+
+    // Fetch paginated transactions
+    const transactions = await Transaction.find({ userId })
+      .sort({ date: -1 })
+      .skip(parseInt(skip))
+      .limit(parseInt(limit));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        transactions,
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+      },
     });
+  } catch (error) {
+    console.error("Error fetching paginated transactions:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching transactions",
+        error: error.message,
+      });
+  }
+};
+
+const getExpenseTransactionsByUser = async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid User ID" });
+    }
+
+    const transactions = await Transaction.find({
+      userId,
+      type: { $regex: /^expense$/i }, // Case-insensitive match for "expense"
+    }).sort({ date: -1 });
 
     res.status(200).json({ success: true, data: transactions });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getMonthlyBreakdown = async (req, res) => {
+  try {
+    const userId = req.user._id; // 👈 Use authenticated user's ID
+    const { month, year } = req.query;
+
+    if (!month || !year) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Month and year are required" });
+    }
+
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0, 23, 59, 59, 999);
+
+    const transactions = await Transaction.find({
+      userId,
+      type: { $regex: /^expense$/i }, // only expenses
+      date: { $gte: start, $lte: end },
+    });
+
+    const breakdown = transactions.reduce((acc, tx) => {
+      acc[tx.category] = (acc[tx.category] || 0) + tx.totalAmount;
+      return acc;
+    }, {});
+
+    res.json({ success: true, data: breakdown });
+  } catch (error) {
+    console.error("Error getting breakdown:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get spending breakdown",
+      error: error.message,
+    });
+  }
+};
+
+const getMonthlyExpenses = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).json({
+        success: false,
+        message: "Month and year are required",
+      });
+    }
+
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0, 23, 59, 59, 999);
+
+    const transactions = await Transaction.find({
+      userId,
+      type: { $regex: /^expense$/i },
+      date: { $gte: start, $lte: end },
+    });
+
+    res.json({ success: true, data: transactions });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch monthly expenses",
+      error: error.message,
+    });
   }
 };
 
@@ -102,7 +210,6 @@ const createTransaction = async (req, res) => {
       description,
       date,
       budgetAllocations,
-      balance,
     } = req.body;
     /**
      * `budgetAllocations` is an array of objects:
@@ -120,8 +227,7 @@ const createTransaction = async (req, res) => {
       !type ||
       !date ||
       !budgetAllocations ||
-      budgetAllocations.length === 0 ||
-      isNaN(balance)
+      budgetAllocations.length === 0
     ) {
       return res
         .status(400)
@@ -149,7 +255,6 @@ const createTransaction = async (req, res) => {
       type,
       description,
       date,
-      balance,
     });
 
     const savedTransaction = await newTransaction.save();
@@ -197,10 +302,58 @@ const createTransaction = async (req, res) => {
   }
 };
 
+const createMultipleTransactions = async (req, res) => {
+  try {
+    console.log("Raw request body:", req.body);
+    const { transactions } = req.body;
+    console.log(transactions);
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No transactions provided" });
+    }
+
+    const invalid = transactions.find(
+      (tx) =>
+        !tx.userId ||
+        !tx.name ||
+        !tx.category ||
+        !tx.type ||
+        !tx.date ||
+        isNaN(tx.totalAmount) ||
+        !mongoose.Types.ObjectId.isValid(tx.userId)
+    );
+
+    if (invalid) {
+      return res.status(400).json({
+        success: false,
+        message: "Some transactions have missing or invalid fields",
+      });
+    }
+
+    // Save all transactions
+    const savedTransactions = await Transaction.insertMany(transactions);
+
+    res.status(201).json({
+      success: true,
+      message: "Multiple transactions created successfully",
+      data: savedTransactions,
+    });
+  } catch (error) {
+    console.error("Bulk transaction error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error creating multiple transactions",
+      error: error.message,
+    });
+  }
+};
+
 // Delete transaction
 const deleteTransaction = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("Attempting to delete transaction ID:", id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res
@@ -220,6 +373,7 @@ const deleteTransaction = async (req, res) => {
       transactionId: id,
     });
 
+    console.log(transactionBudgets);
     if (!transactionBudgets.length) {
       return res.status(404).json({
         success: false,
@@ -241,8 +395,15 @@ const deleteTransaction = async (req, res) => {
     // Delete the transaction-budget relations
     await TransactionBudget.deleteMany({ transactionId: id });
 
+    // Calculate balance adjustment
+    const balanceAdjustment =
+      transaction.type.toLowerCase() === "expense"
+        ? transaction.totalAmount // Increase balance for expense
+        : -transaction.totalAmount; // Decrease balance for income
+
+    // Update user balance
     await User.findByIdAndUpdate(req.user._id, {
-      $inc: { balance: transaction.totalAmount },
+      $inc: { balance: balanceAdjustment },
     });
 
     // Delete the transaction itself
@@ -272,7 +433,6 @@ const updateTransaction = async (req, res) => {
       description,
       date,
       budgetAllocations,
-      balance,
     } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -339,7 +499,7 @@ const updateTransaction = async (req, res) => {
     // Update transaction details
     const updatedTransaction = await Transaction.findByIdAndUpdate(
       id,
-      { name, totalAmount, category, type, description, date, balance },
+      { name, totalAmount, category, type, description, date },
       { new: true, runValidators: true }
     );
 
@@ -386,4 +546,8 @@ module.exports = {
   deleteTransaction,
   updateTransaction,
   getPreviousTransactionsByUser,
+  createMultipleTransactions,
+  getExpenseTransactionsByUser,
+  getMonthlyBreakdown,
+  getMonthlyExpenses,
 };
