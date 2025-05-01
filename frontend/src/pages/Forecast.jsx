@@ -204,6 +204,7 @@ export const Forecast = () => {
           }
         );
         setPredictionResult(savePrediction.data.data);
+
         const date = new Date(savePrediction.data.data.es_prediction.dates[0]);
         setDateOfForecast(date);
         console.log(savePrediction.data.data);
@@ -350,9 +351,14 @@ export const Forecast = () => {
             <div className="text-red-700 bg-red-50 px-4 py-2 rounded-md border border-red-200 text-sm">
               ⚠️ Your predicted expenses for this month exceeded your suggested
               budget (
-              <span className="font-semibold">
-                ₱{predictionResult.combined_total.toFixed(2)}
-              </span>
+              {predictionResult.combined_total ?
+                <span className="font-semibold">
+                  ₱{predictionResult.combined_total.toFixed(2)}
+                </span>
+              : <span className="font-semibold">
+                  ₱{predictionResult.rf_total.toFixed(2)}
+                </span>
+              }
               ). We’ve adjusted it to help you stay on track.
             </div>
           )}
