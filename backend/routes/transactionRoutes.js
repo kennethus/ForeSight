@@ -10,6 +10,7 @@ const {
   getExpenseTransactionsByUser,
   getMonthlyBreakdown,
   getMonthlyExpenses,
+  getThreeMonthsExpenses,
 } = require("../controllers/transactionController");
 const { authenticate } = require("../middlewares/authMiddleware");
 
@@ -25,6 +26,8 @@ router.get("/expense", authenticate, getExpenseTransactionsByUser);
 router.get("/breakdown", authenticate, getMonthlyBreakdown);
 
 router.get("/monthlyExpenses", authenticate, getMonthlyExpenses);
+
+router.get("/threeMonthsExpenses", authenticate, getThreeMonthsExpenses);
 
 //GET a single transaction
 router.get("/:id", authenticate, getTransaction);

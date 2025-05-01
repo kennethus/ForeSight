@@ -47,13 +47,11 @@ const getTransactionsByUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching paginated transactions:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching transactions",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching transactions",
+      error: error.message,
+    });
   }
 };
 
@@ -114,6 +112,86 @@ const getMonthlyBreakdown = async (req, res) => {
   }
 };
 
+const getThreeMonthsExpenses = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).json({
+        success: false,
+        message: "Month and year are required",
+      });
+    }
+
+    // Convert the provided month and year to Date objects for querying
+    const currentMonthStart = new Date(year, month - 1, 1);
+    const currentMonthEnd = new Date(year, month, 0, 23, 59, 59, 999);
+
+    // Define the previous 2 months
+    const prevMonthStart = new Date(currentMonthStart);
+    prevMonthStart.setMonth(prevMonthStart.getMonth() - 1);
+    const prevMonthEnd = new Date(prevMonthStart);
+    prevMonthEnd.setMonth(prevMonthEnd.getMonth() + 1, 0);
+    prevMonthEnd.setHours(23, 59, 59, 999);
+
+    const twoMonthsAgoStart = new Date(prevMonthStart);
+    twoMonthsAgoStart.setMonth(twoMonthsAgoStart.getMonth() - 1);
+    const twoMonthsAgoEnd = new Date(twoMonthsAgoStart);
+    twoMonthsAgoEnd.setMonth(twoMonthsAgoEnd.getMonth() + 1, 0);
+    twoMonthsAgoEnd.setHours(23, 59, 59, 999);
+
+    // Fetch expenses for the 3 months
+    const transactions = await Transaction.find({
+      userId,
+      type: { $regex: /^expense$/i },
+      date: {
+        $gte: twoMonthsAgoStart, // From two months ago
+        $lte: currentMonthEnd, // Up to the current month's end
+      },
+    });
+
+    // Group transactions by month
+    const groupedByMonth = {
+      currentMonth: [],
+      prevMonth: [],
+      twoMonthsAgo: [],
+    };
+
+    transactions.forEach((transaction) => {
+      const transactionMonth = transaction.date.getMonth();
+      const transactionYear = transaction.date.getFullYear();
+
+      if (
+        transactionYear === currentMonthStart.getFullYear() &&
+        transactionMonth === currentMonthStart.getMonth()
+      ) {
+        groupedByMonth.currentMonth.push(transaction);
+      } else if (
+        transactionYear === prevMonthStart.getFullYear() &&
+        transactionMonth === prevMonthStart.getMonth()
+      ) {
+        groupedByMonth.prevMonth.push(transaction);
+      } else if (
+        transactionYear === twoMonthsAgoStart.getFullYear() &&
+        transactionMonth === twoMonthsAgoStart.getMonth()
+      ) {
+        groupedByMonth.twoMonthsAgo.push(transaction);
+      }
+    });
+
+    console.log(groupedByMonth);
+
+    res.json({ success: true, data: groupedByMonth });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch three months' expenses",
+      error: error.message,
+    });
+  }
+};
+
 const getMonthlyExpenses = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -149,21 +227,41 @@ const getPreviousTransactionsByUser = async (req, res) => {
   try {
     const { userId } = req.query;
 
-    console.log("User ID received:", userId);
-
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid User ID" });
     }
 
-    // Calculate the date 3 months ago from today
-    const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    // Get the most recent transaction
+    const latestTransaction = await Transaction.findOne({ userId }).sort({
+      date: -1,
+    });
+
+    if (!latestTransaction) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+
+    const latestDate = new Date(latestTransaction.date);
+
+    // Get the start of the month of the latest transaction
+    const endDate = new Date(
+      latestDate.getFullYear(),
+      latestDate.getMonth(),
+      1
+    );
+
+    // Go back 3 full months
+    const startDate = new Date(endDate);
+    startDate.setMonth(startDate.getMonth() - 3);
 
     const transactions = await Transaction.find({
       userId,
-      date: { $gte: threeMonthsAgo }, // Only transactions from the last 3 months
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+      type: { $regex: /^expense$/i },
     }).sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, data: transactions });
@@ -374,26 +472,21 @@ const deleteTransaction = async (req, res) => {
     });
 
     console.log(transactionBudgets);
-    if (!transactionBudgets.length) {
-      return res.status(404).json({
-        success: false,
-        message: "No budgets linked to this transaction",
-      });
+    if (transactionBudgets.length) {
+      // Determine whether to decrease 'spent' or 'earned' based on transaction type
+      const updateField =
+        transaction.type.toLowerCase() === "expense" ? "spent" : "earned";
+
+      // Reverse the effect of the transaction on each affected budget
+      for (const tb of transactionBudgets) {
+        await Budget.findByIdAndUpdate(tb.budgetId, {
+          $inc: { [updateField]: -tb.amount },
+        });
+      }
+
+      // Delete the transaction-budget relations
+      await TransactionBudget.deleteMany({ transactionId: id });
     }
-
-    // Determine whether to decrease 'spent' or 'earned' based on transaction type
-    const updateField =
-      transaction.type.toLowerCase() === "expense" ? "spent" : "earned";
-
-    // Reverse the effect of the transaction on each affected budget
-    for (const tb of transactionBudgets) {
-      await Budget.findByIdAndUpdate(tb.budgetId, {
-        $inc: { [updateField]: -tb.amount },
-      });
-    }
-
-    // Delete the transaction-budget relations
-    await TransactionBudget.deleteMany({ transactionId: id });
 
     // Calculate balance adjustment
     const balanceAdjustment =
@@ -550,4 +643,5 @@ module.exports = {
   getExpenseTransactionsByUser,
   getMonthlyBreakdown,
   getMonthlyExpenses,
+  getThreeMonthsExpenses,
 };

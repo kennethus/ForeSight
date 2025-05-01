@@ -34,6 +34,14 @@ const ForecastSchema = new mongoose.Schema({
       total_forecasted: Number,
     },
   },
+  adjustment_info: {
+    type: Map,
+    of: String,
+    default: {},
+  },
+  prediction_exceed: {
+    type: Boolean,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
