@@ -4,6 +4,7 @@ import { HiArrowLeft, HiPencil, HiTrash } from "react-icons/hi";
 import AuthContext from "../context/authProvider";
 import axios from "axios";
 import AddTransactionModal from "../components/AddTransactionModal";
+import Spinner from "../components/Spinner";
 
 const TransactionDetails = () => {
   const { auth } = useContext(AuthContext);
@@ -81,12 +82,13 @@ const TransactionDetails = () => {
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
-      <p className="text-center text-gray-500 mt-10">
-        Loading transaction details...
-      </p>
+      <div className="flex items-center justify-center h-screen w-full">
+        <Spinner size={100} color="blue" />
+      </div>
     );
+  }
   if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
 
   return (

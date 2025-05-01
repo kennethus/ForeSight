@@ -6,6 +6,7 @@ import AuthContext from "../context/authProvider";
 import AddTransactionModal from "../components/AddTransactionModal";
 import AddMultipleTransactionsModal from "../components/Transactions/AddMultipleTransactionsModal";
 import TransactionRow from "../components/Transactions/TransactionRow";
+import Spinner from "../components/Spinner";
 
 const Transactions = () => {
   const { auth } = useContext(AuthContext);
@@ -80,7 +81,13 @@ const Transactions = () => {
     if (page > 1) setPage((prev) => prev - 1);
   };
 
-  if (loading) return <p>Loading transactions...</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <Spinner size={100} color="blue" />
+      </div>
+    );
+  }
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (

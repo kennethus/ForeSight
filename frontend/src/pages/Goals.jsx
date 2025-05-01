@@ -4,6 +4,7 @@ import axios from "axios";
 import AuthContext from "../context/authProvider";
 import GoalModal from "../components/GoalModal";
 import GoalRow from "../components/Goals/GoalRow";
+import Spinner from "../components/Spinner";
 
 const Goals = () => {
   const { auth } = useContext(AuthContext);
@@ -52,7 +53,13 @@ const Goals = () => {
     setGoals([newGoal, ...goals]);
   };
 
-  if (loading) return <p>Loading financial goals...</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <Spinner size={100} color="blue" />
+      </div>
+    );
+  }
   if (error) return <p>{error}</p>;
 
   return (

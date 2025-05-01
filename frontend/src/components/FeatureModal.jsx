@@ -34,6 +34,7 @@ const FeatureModal = ({ isOpen, onClose, feature }) => {
   );
 
   const [isEditing, setIsEditing] = useState(isNewFeature);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -55,6 +56,7 @@ const FeatureModal = ({ isOpen, onClose, feature }) => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
 
     try {
       console.log("Submitting Form:", formData);
@@ -78,9 +80,11 @@ const FeatureModal = ({ isOpen, onClose, feature }) => {
         : "Feature updated successfully!"
       );
       setIsEditing(false);
+      setSubmitLoading(false);
       onClose(response.data.data);
     } catch (error) {
       console.error("Error saving feature:", error.response?.data);
+      setSubmitLoading(false);
       alert("Failed to save feature.");
     }
   };
@@ -569,7 +573,11 @@ const FeatureModal = ({ isOpen, onClose, feature }) => {
               {isEditing ?
                 <>
                   <button className="btn-primary rounded-full" type="submit">
-                    {isNewFeature ? "Add" : "Save"}
+                    {submitLoading ?
+                      "Loading..."
+                    : isNewFeature ?
+                      "Add"
+                    : "Save"}
                   </button>
                   {!isNewFeature && (
                     <button

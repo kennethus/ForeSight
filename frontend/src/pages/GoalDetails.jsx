@@ -6,6 +6,7 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { HiArrowLeft, HiPencil } from "react-icons/hi";
 import GoalModal from "../components/GoalModal"; // Ensure correct path
+import Spinner from "../components/Spinner";
 
 const GoalDetails = () => {
   const { auth } = useContext(AuthContext);
@@ -17,6 +18,7 @@ const GoalDetails = () => {
   const [error, setError] = useState(null);
   const [amount, setAmount] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [addAmountLoading, setAddAmountLoading] = useState(false);
 
   useEffect(() => {
     if (!auth) navigate("/");
@@ -51,6 +53,7 @@ const GoalDetails = () => {
   }, [id]);
 
   const handleAddSavings = async () => {
+    setAddAmountLoading(true);
     if (!amount || isNaN(amount) || amount <= 0) {
       alert("Enter a valid amount");
       return;
@@ -69,11 +72,14 @@ const GoalDetails = () => {
       if (response.data.success) {
         setGoal(response.data.data); // Update goal state directly
         setAmount("");
+        setAddAmountLoading(false);
       } else {
         alert("Failed to update goal");
+        setAddAmountLoading(false);
       }
     } catch (err) {
       alert("Error updating goal: " + (err.response?.message || ""));
+      setAddAmountLoading(false);
     }
   };
 
@@ -83,7 +89,13 @@ const GoalDetails = () => {
     setIsEditModalOpen(false); // Close modal
   };
 
-  if (loading) return <p>Loading goal details...</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <Spinner size={100} color="blue" />
+      </div>
+    );
+  }
   if (error) return <p>{error}</p>;
 
   const saved = goal.currentAmount;
@@ -177,7 +189,7 @@ const GoalDetails = () => {
             onClick={handleAddSavings}
             className="w-full bg-green-500 text-white py-2 rounded-lg mt-4 hover:bg-green-600"
           >
-            ADD SAVED AMOUNT
+            {addAmountLoading ? "Loading..." : "ADD SAVED AMOUNT"}
           </button>
         </div>
       </div>

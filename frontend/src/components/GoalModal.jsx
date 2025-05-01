@@ -13,6 +13,7 @@ const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
   const [endDate, setEndDate] = useState(
     goal ? new Date(goal.endDate).toISOString().split("T")[0] : ""
   );
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -40,6 +41,7 @@ const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
 
     try {
       let response;
@@ -71,13 +73,16 @@ const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
           goal ? "Goal updated successfully!" : "Goal created successfully!"
         );
         onGoalUpdated(response.data.data); // Update the parent state
+        setSubmitLoading(false);
         onClose();
       } else {
         alert(goal ? "Failed to update goal." : "Failed to create goal.");
+        setSubmitLoading(false);
       }
     } catch (err) {
       console.error("Error submitting goal:", err.response?.data);
       alert("Error submitting goal.");
+      setSubmitLoading(false);
     }
   };
 
@@ -91,38 +96,72 @@ const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
           {goal ? "Edit Goal" : "Add Goal"}
         </h2>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-          <input
-            className="input-field"
-            type="text"
-            placeholder="Goal Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Goal Name */}
+          <div>
+            <label
+              htmlFor="goalName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Goal Name
+            </label>
+            <input
+              id="goalName"
+              className="input-field"
+              type="text"
+              placeholder="Ex: New Phone"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-          <input
-            className="input-field"
-            type="number"
-            min="1"
-            placeholder="Target Amount"
-            value={targetAmount}
-            onChange={(e) => setTargetAmount(e.target.value)}
-            required
-          />
+          {/* Target Amount */}
+          <div>
+            <label
+              htmlFor="targetAmount"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Target Amount
+            </label>
+            <input
+              id="targetAmount"
+              className="input-field"
+              type="number"
+              min="1"
+              placeholder="Ex: 5000"
+              value={targetAmount}
+              onChange={(e) => setTargetAmount(e.target.value)}
+              required
+            />
+          </div>
 
-          <input
-            className="input-field"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            required
-          />
+          {/* End Date */}
+          <div>
+            <label
+              htmlFor="endDate"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              End Date
+            </label>
+            <input
+              id="endDate"
+              className="input-field"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              required
+            />
+          </div>
 
           {/* Submit & Cancel Buttons */}
           <div className="flex flex-col sm:flex-row justify-between gap-2">
             <button type="submit" className="btn-primary rounded-full">
-              {goal ? "Update Goal" : "Save Goal"}
+              {submitLoading ?
+                "Loading..."
+              : goal ?
+                "Update Goal"
+              : "Save Goal"}
             </button>
             <button
               type="button"

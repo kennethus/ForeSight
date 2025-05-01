@@ -33,6 +33,7 @@ const AddTransactionModal = ({
     { budgetId: "", amount: "" },
   ]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [submitLoading, setSubmitLoading] = useState(false);
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -116,6 +117,7 @@ const AddTransactionModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
 
     const totalAllocated = budgetAllocations.reduce(
       (sum, alloc) => sum + Number(alloc.amount || 0),
@@ -163,6 +165,7 @@ const AddTransactionModal = ({
         );
         alert("Transaction added successfully!");
         onTransactionAdded(newTransaction.data.data);
+        setSubmitLoading(false);
       }
 
       setErrorMessage("");
@@ -170,6 +173,7 @@ const AddTransactionModal = ({
     } catch (err) {
       console.error("Error saving transaction:", err.response?.data);
       alert("Failed to save transaction.");
+      setSubmitLoading(false);
     }
   };
 
@@ -220,89 +224,143 @@ const AddTransactionModal = ({
         <h2 className="text-xl font-semibold text-center mb-4">
           {existingTransaction ? "Edit" : "Add"} Transaction
         </h2>
+
         {loading ?
           <p className="text-center">Loading...</p>
-        : <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+        : <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {errorMessage && (
               <p className="text-red-500 text-sm text-center">{errorMessage}</p>
             )}
 
-            <input
-              className="input-field"
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <input
-              className="input-field"
-              type="text"
-              placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-
-            <div className="flex flex-col sm:flex-row justify-between gap-2">
+            {/* Name */}
+            <div>
+              <label
+                htmlFor="transactionName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Name
+              </label>
               <input
+                id="transactionName"
                 className="input-field"
-                type="number"
-                step="any"
-                min="0"
-                placeholder="Total Amount"
-                value={totalAmount}
-                onChange={(e) =>
-                  setTotalAmount(parseFloat(e.target.value) || "")
-                }
-                required
-              />
-
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="input-field"
+                type="text"
+                placeholder="e.g., Grocery shopping at SM"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
 
-            <select
-              value={category}
-              className="input-field"
-              onChange={(e) => setCategory(e.target.value)}
-              required
-            >
-              <option value="">Select Category</option>
-              <option value="Living">Living</option>
-              <option value="Food and Dining">Food and Dining</option>
-              <option value="Transportation">Transportation</option>
-              <option value="Academic">Academic</option>
-              <option value="Leisure and Entertainment">
-                Leisure and Entertainment
-              </option>
-            </select>
+            {/* Description */}
+            <div>
+              <label
+                htmlFor="transactionDescription"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Description (optional)
+              </label>
+              <input
+                id="transactionDescription"
+                className="input-field"
+                type="text"
+                placeholder="e.g., Bought snacks and toiletries"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
 
-            <div className="flex justify-center gap-5">
-              <label>
+            {/* Total Amount & Date */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label
+                  htmlFor="totalAmount"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Total Amount
+                </label>
+                <input
+                  id="totalAmount"
+                  className="input-field"
+                  type="number"
+                  step="any"
+                  min="0"
+                  placeholder="e.g., 350.75"
+                  value={totalAmount}
+                  onChange={(e) =>
+                    setTotalAmount(parseFloat(e.target.value) || "")
+                  }
+                  required
+                />
+              </div>
+
+              <div className="flex-1">
+                <label
+                  htmlFor="transactionDate"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Date
+                </label>
+                <input
+                  id="transactionDate"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="input-field w-full"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Category */}
+            <div>
+              <label
+                htmlFor="transactionCategory"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Category
+              </label>
+              <select
+                id="transactionCategory"
+                value={category}
+                className="input-field"
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              >
+                <option value="">Select Category</option>
+                <option value="Living">Living</option>
+                <option value="Food and Dining">Food and Dining</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Academic">Academic</option>
+                <option value="Leisure and Entertainment">
+                  Leisure and Entertainment
+                </option>
+              </select>
+            </div>
+
+            {/* Type */}
+            <fieldset className="flex justify-center gap-5">
+              <legend className="sr-only">Transaction Type</legend>
+              <label className="flex items-center gap-1">
                 <input
                   type="radio"
                   value="Expense"
                   checked={type === "Expense"}
                   onChange={() => setType("Expense")}
-                />{" "}
+                />
                 Expense
               </label>
-              <label>
+              <label className="flex items-center gap-1">
                 <input
                   type="radio"
                   value="Income"
                   checked={type === "Income"}
                   onChange={() => setType("Income")}
-                />{" "}
+                />
                 Income
               </label>
-            </div>
+            </fieldset>
 
+            {/* Budget Allocations */}
             <h3 className="text-sm font-semibold text-gray-600">
               Budget Allocations
             </h3>
@@ -311,7 +369,6 @@ const AddTransactionModal = ({
                 key={alloc.budgetId + index}
                 className="flex items-center gap-2"
               >
-                {/* Inputs container - takes full width */}
                 <div className="flex flex-col sm:flex-row flex-grow gap-2">
                   <select
                     value={alloc.budgetId}
@@ -339,7 +396,7 @@ const AddTransactionModal = ({
                   <input
                     className="input-field"
                     type="number"
-                    placeholder="Amount"
+                    placeholder="e.g., 100.00"
                     value={alloc.amount}
                     onChange={(e) =>
                       handleBudgetChange(index, "amount", e.target.value)
@@ -349,7 +406,6 @@ const AddTransactionModal = ({
                   />
                 </div>
 
-                {/* Button - stays small */}
                 {budgetAllocations.length > 1 && (
                   <button
                     type="button"
@@ -372,10 +428,10 @@ const AddTransactionModal = ({
               + Add Budget
             </button>
 
-            {/* Submit & Cancel Buttons */}
-            <div className="flex flex-col sm:flex-row justify-between gap-2">
+            {/* Submit & Cancel */}
+            <div className="flex flex-col sm:flex-row justify-between gap-2 mt-4">
               <button type="submit" className="btn-primary rounded-full">
-                Save Transaction
+                {submitLoading ? "Loading..." : "Save Transaction"}
               </button>
               <button
                 type="button"

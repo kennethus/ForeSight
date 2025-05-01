@@ -22,6 +22,7 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
   );
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -61,6 +62,7 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setSubmitLoading(true);
 
     try {
       if (existingBudget) {
@@ -105,11 +107,14 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
             alert("Budget updated successfully!");
             console.log("SENDING UPDATED BUDGET: ", updatedBudget);
             onBudgetAdded(updatedBudget.data.data);
+            setSubmitLoading(false);
           } else {
             alert("Failed to update 'Others' budget.");
+            setSubmitLoading(false);
           }
         } else {
           alert("Failed to update budget.");
+          setSubmitLoading(false);
         }
       } else {
         if (
@@ -117,6 +122,7 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
           othersBudget.amount + othersBudget.earned - othersBudget.spent
         ) {
           setErrorMessage("Not enough balance!");
+          setSubmitLoading(false);
           return;
         }
         const newBudget = await axios.post(
@@ -136,8 +142,10 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
         if (newBudget.data.success) {
           alert("Budget added successfully!");
           onBudgetAdded(newBudget.data.data);
+          setSubmitLoading(false);
         } else {
           alert("Failed to create Budget");
+          setSubmitLoading(false);
         }
       }
 
@@ -146,6 +154,7 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
     } catch (err) {
       console.error("Error saving budget:", err.response?.data.message);
       setErrorMessage(err.response.data.message);
+      setSubmitLoading(false);
       // alert("Failed to save budget.");
     }
   };
@@ -156,7 +165,7 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
       className="fixed w-md md:w-l lg:w-xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-black bg-opacity-50"
     >
       {isLoading ?
-        <p> Loading...</p>
+        <p>Loading...</p>
       : <div className="bg-white w-full max-w-lg md:max-w-xl lg:max-w-2xl min-h-sm p-5 items-center justify-center rounded-lg shadow-lg overflow-y-auto max-h-[90vh]">
           <h2 className="text-xl font-semibold text-center mb-4">
             {existingBudget ? "Edit" : "Add"} Budget
@@ -170,46 +179,81 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
             </h4>
           )}
 
-          {isLoading ?
-            <p className="text-center">Loading...</p>
-          : <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-              {errorMessage && (
-                <p className="text-red-500 text-sm text-center">
-                  {errorMessage}
-                </p>
-              )}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {errorMessage && (
+              <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+            )}
 
+            {/* Budget Name */}
+            <div>
+              <label
+                htmlFor="budgetName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Budget Name
+              </label>
               <input
+                id="budgetName"
                 className="input-field"
                 type="text"
-                placeholder="Budget Name"
+                placeholder="Ex: Food Expenses"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
+            </div>
 
+            {/* Amount */}
+            <div>
+              <label
+                htmlFor="amount"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Amount
+              </label>
               <input
+                id="amount"
                 className="input-field"
                 type="number"
                 min="1"
-                placeholder="Amount"
+                placeholder="Ex: 5000"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 disabled={existingBudget?.closed}
                 required
               />
+            </div>
 
-              <div className="flex flex-col sm:flex-row justify-between gap-2">
+            {/* Start & End Dates */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label
+                  htmlFor="startDate"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Start Date
+                </label>
                 <input
-                  className="input-field"
+                  id="startDate"
+                  className="input-field w-full"
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   required
                   disabled={existingBudget?.closed}
                 />
+              </div>
+
+              <div className="flex-1">
+                <label
+                  htmlFor="endDate"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  End Date
+                </label>
                 <input
-                  className="input-field"
+                  id="endDate"
+                  className="input-field w-full"
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
@@ -217,22 +261,22 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
                   disabled={existingBudget?.closed}
                 />
               </div>
+            </div>
 
-              {/* Submit & Cancel Buttons */}
-              <div className="flex flex-col sm:flex-row justify-between gap-2">
-                <button type="submit" className="btn-primary rounded-full">
-                  Save Budget
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="btn-secondary rounded-full"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          }
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row justify-between gap-2 mt-4">
+              <button type="submit" className="btn-primary rounded-full">
+                {submitLoading ? "Loading..." : "Save Budget"}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="btn-secondary rounded-full"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
       }
     </dialog>

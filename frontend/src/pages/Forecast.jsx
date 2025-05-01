@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import FeatureModal from "../components/FeatureModal";
 import AuthContext from "../context/authProvider";
+import Spinner from "../components/Spinner";
 
 function classifyAgeGroup(age) {
   if (age < 18) {
@@ -75,6 +76,8 @@ export const Forecast = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [predictionResult, setPredictionResult] = useState(null);
   const [dateOfForecast, setDateOfForecast] = useState(null);
+  const [predictLoading, setPredictLoading] = useState(false);
+  const [budgetCreateLoading, setBudgetCreateLoading] = useState(false);
 
   useEffect(() => {
     const fetchFeature = async () => {
@@ -122,6 +125,7 @@ export const Forecast = () => {
 
   const predict = async () => {
     setError("");
+    setPredictLoading(true);
     try {
       const userRes = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/users/${auth._id}`,
@@ -208,16 +212,20 @@ export const Forecast = () => {
         const date = new Date(savePrediction.data.data.es_prediction.dates[0]);
         setDateOfForecast(date);
         console.log(savePrediction.data.data);
+        setPredictLoading(false);
       } else {
         setError("Failed to fetch user and transactions");
+        setPredictLoading(false);
       }
     } catch (error) {
       console.error("Prediction error:", error);
       setError("Something went wrong during prediction.");
+      setPredictLoading(false);
     }
   };
 
   const createBudgets = async () => {
+    setBudgetCreateLoading(true);
     setError("");
     try {
       const predictedBudgets = predictionResult.categories;
@@ -258,9 +266,11 @@ export const Forecast = () => {
         alert("Successfully created budgets!");
         console.log(createdBudgets.data.data);
       }
+      setBudgetCreateLoading(false);
     } catch (error) {
       console.error("Budget creation error:", error);
       setError("Something went wrong during creation of budget.");
+      setBudgetCreateLoading(false);
     }
   };
 
@@ -268,8 +278,8 @@ export const Forecast = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Loading/Error States */}
       {loading && (
-        <div className="text-center text-gray-600">
-          <p>Loading features...</p>
+        <div className="flex items-center justify-center h-screen w-full">
+          <Spinner size={100} color="blue" />
         </div>
       )}
 
@@ -364,16 +374,19 @@ export const Forecast = () => {
           )}
 
           {/* Budget Creation Prompt */}
-          <div className="text-center mt-6">
-            <p className="text-lg text-gray-700 mb-4">
-              Would you like to create budgets from these predictions?
-            </p>
-            <button
-              onClick={createBudgets}
-              className="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition"
-            >
-              Create Budgets
-            </button>
+          <div className="flex justify-center mt-6">
+            <div className="text-center">
+              <p className="text-lg text-gray-700 mb-4">
+                Would you like to create budgets from these predictions?
+              </p>
+              <button
+                onClick={createBudgets}
+                disabled={budgetCreateLoading}
+                className="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition items-center justify-center gap-2 min-w-[160px]"
+              >
+                {budgetCreateLoading ? "Loading..." : "Create Budgets"}
+              </button>
+            </div>
           </div>
 
           {/* Explanation + Adjustment */}
@@ -507,11 +520,14 @@ export const Forecast = () => {
         {feature && (
           <button
             onClick={predict}
-            className="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition"
+            disabled={predictLoading}
+            className="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition flex items-center justify-center gap-2 min-w-[160px]"
           >
-            Suggest Budget
+            {predictLoading && <Spinner />}
+            {predictLoading ? "Loading..." : "Suggest Budget"}
           </button>
         )}
+
         <button
           onClick={() => {
             setIsModalOpen(true);

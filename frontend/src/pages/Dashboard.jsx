@@ -6,6 +6,7 @@ import CategoryChart from "../components/Dashboard/CategoryChart";
 import ExpenseTrendChart from "../components/Dashboard/ExpenseTrendChart";
 import TransactionRow from "../components/Transactions/TransactionRow";
 import BudgetRow from "../components/Budgets/BudgetRow";
+import Spinner from "../components/Spinner";
 
 const Dashboard = () => {
   const { auth } = useContext(AuthContext);
@@ -146,7 +147,12 @@ const Dashboard = () => {
   }, [auth]);
 
   if (userLoading || transactionsLoading || budgetLoading)
-    return <p>Loading dashboard...</p>;
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <Spinner size={100} color="blue" />
+      </div>
+    );
+
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (

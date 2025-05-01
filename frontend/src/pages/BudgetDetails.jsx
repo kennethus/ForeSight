@@ -4,6 +4,7 @@ import axios from "axios";
 import AuthContext from "../context/authProvider";
 import AddBudgetModal from "../components/AddBudgetModal";
 import { HiArrowLeft, HiPencil, HiTrash, HiLockClosed } from "react-icons/hi";
+import Spinner from "../components/Spinner";
 
 const BudgetDetails = () => {
   const { auth } = useContext(AuthContext);
@@ -163,12 +164,13 @@ const BudgetDetails = () => {
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
-      <p className="text-center text-gray-500 mt-10">
-        Loading budget details...
-      </p>
+      <div className="flex items-center justify-center h-screen w-full">
+        <Spinner size={100} color="blue" />
+      </div>
     );
+  }
   if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
 
   return (

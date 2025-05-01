@@ -4,6 +4,7 @@ import axios from "axios";
 import AuthContext from "../context/authProvider";
 import AddBudgetModal from "../components/AddBudgetModal";
 import BudgetRow from "../components/Budgets/BudgetRow";
+import Spinner from "../components/Spinner";
 
 const Budgets = () => {
   const { auth } = useContext(AuthContext);
@@ -51,7 +52,13 @@ const Budgets = () => {
     setBudgets((prevBudgets) => [newBudget, ...prevBudgets]);
   };
 
-  if (loading) return <p>Loading budgets...</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <Spinner size={100} color="blue" />
+      </div>
+    );
+  }
   if (error) return <p className="error">{error}</p>;
 
   return (
