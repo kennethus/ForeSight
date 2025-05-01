@@ -81,13 +81,11 @@ const createUser = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error creating user",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error creating user",
+      error: error.message,
+    });
   }
 });
 
@@ -135,13 +133,11 @@ const loginUser = asyncHandler(async (req, res) => {
         .json({ success: false, message: "Invalid credentials" });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error logging user",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error logging user",
+      error: error.message,
+    });
   }
 });
 
@@ -209,7 +205,7 @@ const generateToken = (res, id) => {
   res.cookie("token", token, {
     httpOnly: true,
     secure: process.env.IS_DEPLOYED === "true",
-    sameSite: process.env.IS_DEPLOYED === "true" ? "none" : "lax",
+    sameSite: "none",
     maxAge: 3600000, // 1 hr
   });
 
