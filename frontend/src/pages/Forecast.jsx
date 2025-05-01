@@ -74,6 +74,7 @@ export const Forecast = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [predictionResult, setPredictionResult] = useState(null);
+  const [dateOfForecast, setDateOfForecast] = useState(null);
 
   useEffect(() => {
     const fetchFeature = async () => {
@@ -98,6 +99,14 @@ export const Forecast = () => {
         }
         if (previousForecastRes.data.success) {
           setPredictionResult(previousForecastRes.data.data);
+
+          const esPrediction = previousForecastRes.data.data?.es_prediction;
+          if (esPrediction?.dates?.length > 0) {
+            const date = new Date(esPrediction.dates[0]);
+            setDateOfForecast(date);
+          } else {
+            console.warn("es_prediction or dates is missing in the response");
+          }
         }
       } catch (err) {
         console.error("Error fetching feature:", err.response?.data);
@@ -112,6 +121,7 @@ export const Forecast = () => {
   }, []);
 
   const predict = async () => {
+    setError("");
     try {
       const userRes = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/users/${auth._id}`,
@@ -155,19 +165,35 @@ export const Forecast = () => {
 
         // ✅ Optionally add previous forecast if it exists
         if (predictionResult) {
-          finalFeature.previous_forecast = predictionResult;
+          finalFeature.previous_forecast = {
+            userId: predictionResult.userId,
+            forecasted: predictionResult.es_prediction.forecast,
+            dates: predictionResult.es_prediction.dates,
+            category: {
+              living_expenses: predictionResult.categories.Living_Expenses,
+              food_and_dining_expenses:
+                predictionResult.categories.Food_and_Dining_Expenses,
+              transportation_expenses:
+                predictionResult.categories.Transportation_Expenses,
+              academic_expenses: predictionResult.categories.Academic_Expenses,
+              leisure_and_entertainment_expenses:
+                predictionResult.categories.Leisure_and_Entertainment_Expenses,
+            },
+          };
         }
 
         console.log("FINAL FEATURE: ", finalFeature);
 
         const prediction = await axios.post(
-          `https://foresightrfmodel.onrender.com/predict`,
+          `${import.meta.env.VITE_RF_URL}/predict`,
           finalFeature,
           {
             headers: { "Content-Type": "application/json" },
             withCredentials: true,
           }
         );
+
+        console.log(prediction);
 
         const savePrediction = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/forecast/saveForest`,
@@ -177,8 +203,10 @@ export const Forecast = () => {
             withCredentials: true,
           }
         );
-        setPredictionResult(prediction.data);
-        console.log(savePrediction);
+        setPredictionResult(savePrediction.data.data);
+        const date = new Date(savePrediction.data.data.es_prediction.dates[0]);
+        setDateOfForecast(date);
+        console.log(savePrediction.data.data);
       } else {
         setError("Failed to fetch user and transactions");
       }
@@ -188,69 +216,308 @@ export const Forecast = () => {
     }
   };
 
+  const createBudgets = async () => {
+    setError("");
+    try {
+      const predictedBudgets = predictionResult.categories;
+      const startDate = new Date(dateOfForecast);
+
+      // Move to the next month, then subtract one day
+      const endDate = new Date(
+        startDate.getFullYear(),
+        startDate.getMonth() + 1,
+        0
+      );
+
+      const budgets = Object.entries(predictedBudgets).map(
+        ([name, amount]) => ({
+          userId: predictionResult.userId,
+          name,
+          amount,
+          spent: 0,
+          earned: 0,
+          startDate,
+          endDate,
+          closed: false,
+        })
+      );
+
+      console.log("SENDING BUDGET:", budgets);
+
+      const createdBudgets = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/budgets/createMultiple`,
+        { budgets },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+
+      if (createdBudgets.data.success) {
+        alert("Successfully created budgets!");
+        console.log(createdBudgets.data.data);
+      }
+    } catch (error) {
+      console.error("Budget creation error:", error);
+      setError("Something went wrong during creation of budget.");
+    }
+  };
+
   return (
-    <div>
-      {loading && <p>Loading features...</p>}
-      {error && <p className="error">{error}</p>}
-
-      {predictionResult && (
-        <div className="mt-4 p-4 border rounded shadow bg-white">
-          <h3 className="text-xl font-semibold mb-2">Prediction Result</h3>
-          <p>
-            <strong>Exponential Smoothing Success:</strong>{" "}
-            {predictionResult.es_success ? "Yes" : "No"}
-          </p>
-          <p>
-            <strong>Predicted Total Expense:</strong> ₱
-            {predictionResult.rf_total.toFixed(2)}
-          </p>
-
-          <h4 className="text-lg font-medium mt-3">
-            Predicted Expenses by Category:
-          </h4>
-          <ul className="list-disc list-inside">
-            {Object.entries(predictionResult.categories).map(
-              ([category, amount]) => (
-                <li key={category}>
-                  {category.replace(/_/g, " ")}: ₱{amount.toFixed(2)}
-                </li>
-              )
-            )}
-          </ul>
-
-          {predictionResult.combined_total && (
-            <p className="mt-2 font-bold">
-              Combined Total Forecast: ₱
-              {predictionResult.combined_total.toFixed(2)}
-            </p>
-          )}
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Loading/Error States */}
+      {loading && (
+        <div className="text-center text-gray-600">
+          <p>Loading features...</p>
         </div>
       )}
 
-      {!loading &&
-        (feature ?
+      {error && (
+        <div className="text-red-500 text-center">
+          <p>{error}</p>
+        </div>
+      )}
+
+      {/* Prediction Result */}
+      {predictionResult ?
+        <div className="p-6 border border-gray-200 rounded-lg shadow-sm bg-white space-y-4">
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <svg
+              className="w-6 h-6 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 17v-2a4 4 0 014-4h6m0 0l-2.293-2.293a1 1 0 011.414-1.414L21 10l-2.879 2.879a1 1 0 01-1.414-1.414L19 11h-6a2 2 0 00-2 2v2"
+              />
+            </svg>
+            <h3 className="text-2xl font-bold text-gray-800">
+              Prediction Summary for{" "}
+              {dateOfForecast?.toLocaleString("en-US", { month: "long" })}
+            </h3>
+          </div>
+
+          {/* Predicted Total */}
+          <div className="text-center mt-4">
+            <p className="text-xl font-medium text-gray-700">
+              Predicted Total Expense
+            </p>
+            <p className="text-2xl text-blue-600 font-bold mt-1">
+              ₱
+              {predictionResult.prediction_exceed ?
+                Object.values(predictionResult.categories)
+                  .reduce((sum, value) => sum + value, 0)
+                  .toFixed(2)
+              : (
+                  predictionResult.combined_total ?? predictionResult.rf_total
+                ).toFixed(2)
+              }
+            </p>
+          </div>
+
+          {/* Category Breakdown */}
+          <div>
+            <h4 className="text-xl font-semibold text-gray-700 mb-2">
+              Breakdown by Category
+            </h4>
+            <ul className="flex flex-col gap-2 text-gray-800">
+              {Object.entries(predictionResult.categories).map(
+                ([category, amount]) => (
+                  <li
+                    key={category}
+                    className="bg-gray-50 rounded-md px-4 py-2 border border-gray-200"
+                  >
+                    <span className="font-semibold">
+                      {category
+                        .replace(/_/g, " ")
+                        .replace(/Expenses/i, " Expenses")}
+                      :
+                    </span>{" "}
+                    ₱{amount.toFixed(2)}
+                  </li>
+                )
+              )}
+            </ul>
+          </div>
+
+          {/* Budget Warning */}
+          {predictionResult.prediction_exceed && (
+            <div className="text-red-700 bg-red-50 px-4 py-2 rounded-md border border-red-200 text-sm">
+              ⚠️ Your predicted expenses for this month exceeded your suggested
+              budget (
+              <span className="font-semibold">
+                ₱{predictionResult.combined_total.toFixed(2)}
+              </span>
+              ). We’ve adjusted it to help you stay on track.
+            </div>
+          )}
+
+          {/* Budget Creation Prompt */}
+          <div className="text-center mt-6">
+            <p className="text-lg text-gray-700 mb-4">
+              Would you like to create budgets from these predictions?
+            </p>
+            <button
+              onClick={createBudgets}
+              className="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition"
+            >
+              Create Budgets
+            </button>
+          </div>
+
+          {/* Explanation + Adjustment */}
+          {predictionResult?.es_success ?
+            <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm space-y-4">
+              <h4 className="text-xl font-semibold text-gray-800">
+                How We Predicted Your Budget
+              </h4>
+              <p className="text-gray-700">
+                This budget suggestion is based on your socio-demographic
+                information and your spending habits over the past 3 months.
+              </p>
+
+              {/* R²-based Insight */}
+              {predictionResult.es_prediction.metrics.r2 > 0.5 ?
+                <div className="text-green-700 bg-green-50 px-4 py-2 rounded-md border border-green-200 text-sm">
+                  ✅ Your actual spending last month was close to what we
+                  predicted, so we trusted your past transactions more when
+                  creating this month’s budget.
+                  <span className="ml-2 inline-block relative group align-middle">
+                    <svg
+                      className="w-4 h-4 text-gray-500 cursor-pointer inline"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
+                      />
+                    </svg>
+                    <div className="absolute hidden group-hover:block w-64 text-xs text-white bg-gray-800 p-2 rounded shadow-lg top-6 left-1/2 -translate-x-1/2 z-10">
+                      Your spending was close to our prediction by{" "}
+                      <span className="font-semibold">
+                        {(
+                          predictionResult.es_prediction.metrics.r2 * 100
+                        ).toFixed(0)}
+                        %
+                      </span>
+                      <br />A higher percentage means your actual spending
+                      closely matched our forecast.
+                    </div>
+                  </span>
+                </div>
+              : <div className="text-yellow-700 bg-yellow-50 px-4 py-2 rounded-md border border-yellow-200 text-sm">
+                  ⚠️ Your actual spending last month was quite different from
+                  what we predicted, so we relied more on your profile details
+                  to estimate this month’s budget.
+                  <span className="ml-2 inline-block relative group align-middle">
+                    <svg
+                      className="w-4 h-4 text-gray-500 cursor-pointer inline"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
+                      />
+                    </svg>
+                    <div className="absolute hidden group-hover:block w-64 text-xs text-white bg-gray-800 p-2 rounded shadow-lg top-6 left-1/2 -translate-x-1/2 z-10">
+                      Your spending was close to our prediction by{" "}
+                      <span className="font-semibold">
+                        {(
+                          predictionResult.es_prediction.metrics.r2 * 100
+                        ).toFixed(0)}
+                        %
+                      </span>
+                      <br />A lower percentage means your actual expenses were
+                      far from what we forecasted.
+                    </div>
+                  </span>
+                </div>
+              }
+
+              {/* Adjustment Info */}
+              {predictionResult.adjustment_info &&
+                Object.keys(predictionResult.adjustment_info).length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-xl font-semibold text-gray-800 mb-3">
+                      Why Your Budget Changed
+                    </h4>
+                    <div className="flex flex-col gap-4">
+                      {Object.entries(predictionResult.adjustment_info).map(
+                        ([category, message]) => (
+                          <div
+                            key={category}
+                            className="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm"
+                          >
+                            <h5 className="text-lg font-semibold text-blue-700 mb-1">
+                              {category
+                                .replace(/_/g, " ")
+                                .replace(/Expenses/i, " Expenses")}
+                            </h5>
+                            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                              {message}
+                            </p>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+            </div>
+          : <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm">
+              <p className="text-gray-700">
+                Your budget suggestion is based on your demographic information
+                for now. To make it more accurate, please add at least 3 months
+                of transaction data to include your spending habits in the
+                prediction.
+              </p>
+            </div>
+          }
+        </div>
+      : <div className="text-center text-gray-500">
+          {!feature ?
+            <p>
+              Add your socio-demographic information so I can suggest a budget
+              for you!
+            </p>
+          : <p>No budget suggestion yet.</p>}
+        </div>
+      }
+
+      {/* Action Buttons */}
+      <div className="flex justify-center gap-4 mt-6">
+        {feature && (
           <button
-            onClick={() => {
-              setIsModalOpen(true);
-              setIsAdding(false);
-            }}
-            className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition"
+            onClick={predict}
+            className="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition"
           >
-            View Features
+            Suggest Budget
           </button>
-        : <button
-            onClick={() => {
-              setIsModalOpen(true);
-              setIsAdding(true);
-            }}
-            className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition"
-          >
-            Add Feature
-          </button>)}
+        )}
+        <button
+          onClick={() => {
+            setIsModalOpen(true);
+            setIsAdding(!feature);
+          }}
+          className="bg-blue-500 text-white px-6 py-2 rounded-md shadow hover:bg-blue-600 transition"
+        >
+          {feature ? "View My Information" : "Add My Information"}
+        </button>
+      </div>
 
-      <button onClick={predict}>Predict</button>
-
-      {/* Feature Modal (Editing or Adding) */}
+      {/* Modal */}
       {isModalOpen && (
         <FeatureModal
           isOpen={isModalOpen}

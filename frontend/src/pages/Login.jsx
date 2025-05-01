@@ -60,8 +60,8 @@ const Login = () => {
              h-[40vh] md:h-[50vh] lg:h-auto"
       >
         <div className="text-center">
-          <img src="/logo.png" alt="ForeSight Logo" className="w-40 mx-auto" />
-          <h1 className="text-white text-3xl font-bold mt-4">ForeSight</h1>
+          <img src="/logo.png" alt="ForeSight Logo" className="w-70 mx-auto" />
+          <h1 className="text-white text-5xl font-bold mt-4">ForeSight</h1>
         </div>
       </div>
 

@@ -9,7 +9,6 @@ Chart.register(ArcElement, Tooltip, Legend);
 
 const CategoryChart = ({ categoryBreakdown, onMonthChange, loading }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const currentDate = new Date();
 
   useEffect(() => {
     onMonthChange(selectedDate);
@@ -27,6 +26,8 @@ const CategoryChart = ({ categoryBreakdown, onMonthChange, loading }) => {
 
   const labels = Object.keys(categoryBreakdown || {});
   const dataValues = Object.values(categoryBreakdown || {});
+
+  // const total = dataValues.reduce((acc, val) => acc + val, 0); // Optional: can be shown elsewhere too
 
   const chartData = {
     labels,
@@ -47,12 +48,8 @@ const CategoryChart = ({ categoryBreakdown, onMonthChange, loading }) => {
     ],
   };
 
-  const isCurrentMonth =
-    selectedDate.getMonth() === currentDate.getMonth() &&
-    selectedDate.getFullYear() === currentDate.getFullYear();
-
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 w-full md:w-3/4 mx-auto">
+    <div className="bg-white shadow-md rounded-lg p-6 w-full mx-auto">
       <div className="flex items-center justify-between mb-3">
         <button
           className={`p-2 rounded-full bg-transparent text-gray-800 hover:bg-gray-200 ${
@@ -69,11 +66,10 @@ const CategoryChart = ({ categoryBreakdown, onMonthChange, loading }) => {
         <button
           onClick={handleNextMonth}
           className={`p-2 rounded-full bg-transparent ${
-            isCurrentMonth || loading ?
+            loading ?
               "text-gray-400 cursor-not-allowed"
             : "hover:bg-gray-200 text-gray-800"
           }`}
-          disabled={isCurrentMonth || loading}
         >
           <FaArrowRight size={20} />
         </button>

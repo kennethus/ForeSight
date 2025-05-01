@@ -82,44 +82,23 @@ const UserProfile = () => {
   if (error) return <p>{error}</p>;
 
   return (
-    <div
-      style={{
-        maxWidth: "600px",
-        margin: "auto",
-        padding: "20px",
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        textAlign: "center",
-      }}
-    >
+    <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-md text-center">
       <img
         src="https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg"
         alt="Profile"
-        style={{
-          width: "120px",
-          height: "120px",
-          borderRadius: "50%",
-          marginBottom: "10px",
-        }}
+        className="w-28 h-28 rounded-full mx-auto mb-4 border-4 border-blue-900"
       />
-      <h2>{user.name}</h2>
-      <p style={{ fontWeight: "bold", color: "gray" }}>USER</p>
+      <h2 className="text-2xl font-bold text-blue-900">{user.name}</h2>
+      <p className="font-semibold text-gray-500 mb-6">USER</p>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          alignItems: "center",
-        }}
-      >
+      <div className="flex flex-col gap-4 items-center">
         <input
           type="text"
           name="username"
           value={editedUser.username}
           onChange={handleChange}
           disabled={!isEditing}
-          style={{ padding: "8px", width: "80%" }}
+          className="w-4/5 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-900"
         />
         <input
           type="text"
@@ -127,7 +106,7 @@ const UserProfile = () => {
           value={editedUser.email}
           onChange={handleChange}
           disabled={!isEditing}
-          style={{ padding: "8px", width: "80%" }}
+          className="w-4/5 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-900"
         />
         <input
           type="text"
@@ -135,7 +114,7 @@ const UserProfile = () => {
           value={editedUser.age}
           onChange={handleChange}
           disabled={!isEditing}
-          style={{ padding: "8px", width: "80%" }}
+          className="w-4/5 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-900"
         />
         <input
           type="text"
@@ -143,24 +122,16 @@ const UserProfile = () => {
           value={editedUser.sex}
           onChange={handleChange}
           disabled={!isEditing}
-          style={{ padding: "8px", width: "80%" }}
+          className="w-4/5 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-900"
         />
       </div>
 
-      {isEditing ?
-        <button
-          onClick={handleSubmit}
-          style={{ marginTop: "10px", padding: "8px 16px", cursor: "pointer" }}
-        >
-          Save
-        </button>
-      : <button
-          onClick={() => setIsEditing(true)}
-          style={{ marginTop: "10px", padding: "8px 16px", cursor: "pointer" }}
-        >
-          Edit
-        </button>
-      }
+      <button
+        onClick={isEditing ? handleSubmit : () => setIsEditing(true)}
+        className="mt-6 px-6 py-2 rounded text-white bg-blue-900 hover:bg-blue-800 transition-all"
+      >
+        {isEditing ? "Save" : "Edit"}
+      </button>
     </div>
   );
 };

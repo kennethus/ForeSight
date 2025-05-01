@@ -87,6 +87,53 @@ const Transactions = () => {
     <div>
       {transactions.length > 0 ?
         <>
+          {/* Pagination Controls */}
+          <div className="flex justify-between mt-6 px-4 mb-4">
+            <button
+              onClick={handlePrevPage}
+              disabled={page === 1}
+              className="px-4 py-2 rounded bg-transparent disabled:opacity-50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6 text-gray-700"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+            <span className="px-2 py-2 text-sm text-gray-700">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={page === totalPages}
+              className="px-4 py-2 rounded bg-transparent disabled:opacity-50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6 text-gray-700"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+
           <table className="w-full">
             <tbody className="space-y-4">
               {transactions.map((transaction) => (
@@ -98,27 +145,6 @@ const Transactions = () => {
               ))}
             </tbody>
           </table>
-
-          {/* Pagination Controls */}
-          <div className="flex justify-center mt-6 gap-4">
-            <button
-              onClick={handlePrevPage}
-              disabled={page === 1}
-              className="px-4 py-2 bg-blue-500 rounded disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span className="px-2 py-2 text-sm text-gray-700">
-              Page {page} of {totalPages}
-            </span>
-            <button
-              onClick={handleNextPage}
-              disabled={page === totalPages}
-              className="px-4 py-2 bg-blue-500 rounded disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
         </>
       : <h3>You have no transactions now. Add one!</h3>}
 

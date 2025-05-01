@@ -247,12 +247,16 @@ const AddTransactionModal = ({
               <input
                 className="input-field"
                 type="number"
+                step="any"
+                min="0"
                 placeholder="Total Amount"
                 value={totalAmount}
-                min="1"
-                onChange={(e) => setTotalAmount(e.target.value)}
+                onChange={(e) =>
+                  setTotalAmount(parseFloat(e.target.value) || "")
+                }
                 required
               />
+
               <input
                 type="date"
                 value={date}

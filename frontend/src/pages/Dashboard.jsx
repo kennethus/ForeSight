@@ -4,14 +4,18 @@ import axios from "axios";
 import AuthContext from "../context/authProvider";
 import CategoryChart from "../components/Dashboard/CategoryChart";
 import ExpenseTrendChart from "../components/Dashboard/ExpenseTrendChart";
+import TransactionRow from "../components/Transactions/TransactionRow";
+import BudgetRow from "../components/Budgets/BudgetRow";
 
 const Dashboard = () => {
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [budgets, setBudgets] = useState([]);
   const [userLoading, setUserLoading] = useState(true);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
+  const [budgetLoading, setBudgetLoading] = useState(true);
   const [error, setError] = useState(null);
   const [breakdownData, setBreakdownData] = useState({});
   const [expenseData, setExpenseData] = useState([]);
@@ -91,11 +95,19 @@ const Dashboard = () => {
     const fetchTransactions = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/transactions/expense`,
-          { params: { userId: auth._id }, withCredentials: true }
+          `${import.meta.env.VITE_API_URL}/api/transactions`,
+          {
+            params: {
+              userId: auth._id,
+              page: 1,
+              limit: 10,
+            },
+            withCredentials: true,
+          }
         );
         if (response.data.success) {
-          setTransactions(response.data.data);
+          console.log(response.data.data);
+          setTransactions(response.data.data.transactions);
         } else {
           setError("Failed to fetch transactions");
         }
@@ -105,39 +117,107 @@ const Dashboard = () => {
         setTransactionsLoading(false);
       }
     };
+
+    const fetchBudgets = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/budgets/`,
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
+        );
+
+        if (response.data.success) {
+          setBudgets(response.data.data);
+        } else {
+          setError("Failed to fetch budgets");
+        }
+      } catch (err) {
+        console.error("Error fetching budgets:", err.response?.data);
+        setError(err.response?.data?.message || "Failed to load budgets");
+      } finally {
+        setBudgetLoading(false);
+      }
+    };
+
     fetchTransactions();
+    fetchBudgets();
   }, [auth]);
 
-  if (userLoading || transactionsLoading) return <p>Loading dashboard...</p>;
+  if (userLoading || transactionsLoading || budgetLoading)
+    return <p>Loading dashboard...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Hello {user.name}!</h1>
+      <h1 className="text-3xl font-bold text-blue-900 mb-4">
+        Hello, {user.name}!
+      </h1>
+
       {auth?.name ?
-        <div className="mb-6">
-          <p className="text-lg">
-            Current balance:{" "}
-            <span className="font-semibold">₱{user.balance}</span>
+        <div className="mb-8 text-center">
+          <p className="text-2xl font-semibold text-gray-700 mb-2">
+            Current Balance
           </p>
+          <p className="text-4xl font-bold text-blue-900">₱{user.balance}</p>
         </div>
-      : <p>You are not logged in.</p>}
+      : <p className="text-red-600">You are not logged in.</p>}
 
       {transactions.length > 0 ?
-        <div className="flex flex-col items-center gap-6">
-          <CategoryChart
-            categoryBreakdown={breakdownData}
-            onMonthChange={fetchBreakdown}
-            loading={breakdownLoading}
-          />
-          <ExpenseTrendChart
-            monthlyTransactions={expenseData}
-            onMonthChange={fetchMonthlyExpenses}
-            loading={expenseLoading}
-          />
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <div className="bg-blue-50 p-4 rounded-lg shadow-inner">
+            <CategoryChart
+              categoryBreakdown={breakdownData}
+              onMonthChange={fetchBreakdown}
+              loading={breakdownLoading}
+            />
+          </div>
+
+          <div className="bg-blue-50 p-4 rounded-lg shadow-inner">
+            <ExpenseTrendChart
+              monthlyTransactions={expenseData}
+              onMonthChange={fetchMonthlyExpenses}
+              loading={expenseLoading}
+            />
+          </div>
+
+          <div className="bg-blue-50 p-4 rounded-lg shadow-inner max-h-96 overflow-y-auto">
+            <div className="bg-white shadow-md rounded-lg p-6 w-full mx-auto">
+              <h3 className="text-md font-semibold">Recent Transactions</h3>
+              <table className="w-full">
+                <tbody className="space-y-4">
+                  {transactions.map((transaction) => (
+                    <TransactionRow
+                      key={transaction._id}
+                      transaction={transaction}
+                      onClick={() =>
+                        navigate(`/transactions/${transaction._id}`)
+                      }
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 p-4 rounded-lg shadow-inner max-h-96 overflow-y-auto">
+            <div className="bg-white shadow-md rounded-lg p-6 w-full mx-auto space-y-4">
+              <h3 className="text-md font-semibold">Budgets</h3>
+              {budgets
+                .filter((budget) => !budget.closed)
+                .map((budget) => (
+                  <BudgetRow
+                    key={budget._id}
+                    budget={budget}
+                    onClick={() => navigate(`/budgets/${budget._id}`)}
+                  />
+                ))}
+            </div>
+          </div>
         </div>
-      : <p className="text-gray-500 mt-4">
-          No transactions available to display.
+      : <p className="text-gray-500 mt-6 text-center">
+          No transactions yet. Add one to get started!
         </p>
       }
     </div>

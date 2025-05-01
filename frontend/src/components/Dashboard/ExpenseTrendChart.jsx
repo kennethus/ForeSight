@@ -37,12 +37,7 @@ const ExpenseTrendChart = ({ monthlyTransactions, onMonthChange, loading }) => {
   };
 
   const handleNextMonth = () => {
-    if (
-      selectedDate.getMonth() < currentDate.getMonth() ||
-      selectedDate.getFullYear() < currentDate.getFullYear()
-    ) {
-      setSelectedDate((prev) => addMonths(prev, 1));
-    }
+    setSelectedDate((prev) => addMonths(prev, 1));
   };
 
   const month = selectedDate.getMonth();
@@ -72,12 +67,8 @@ const ExpenseTrendChart = ({ monthlyTransactions, onMonthChange, loading }) => {
     ],
   };
 
-  const isCurrentMonth =
-    selectedDate.getMonth() === currentDate.getMonth() &&
-    selectedDate.getFullYear() === currentDate.getFullYear();
-
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 w-full md:w-3/4 mx-auto">
+    <div className="bg-white shadow-md rounded-lg p-6 w-full mx-auto">
       <div className="flex justify-between items-center mb-4">
         <button
           onClick={handlePrevMonth}
@@ -96,11 +87,10 @@ const ExpenseTrendChart = ({ monthlyTransactions, onMonthChange, loading }) => {
         <button
           onClick={handleNextMonth}
           className={`p-2 rounded-full bg-transparent ${
-            isCurrentMonth ?
+            loading ?
               "text-gray-400 cursor-not-allowed"
             : "hover:bg-gray-200 text-gray-800"
-          } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-          disabled={isCurrentMonth}
+          }`}
         >
           <FaArrowRight size={20} />
         </button>

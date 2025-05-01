@@ -219,8 +219,10 @@ const BudgetDetails = () => {
 
         {/* Amount */}
         <div className="text-center mt-4">
-          <p className="text-gray-500">Initial Amount</p>
-          <p className="text-2xl font-bold text-gray-800">₱{budget.amount}</p>
+          <p className="text-gray-500">Amount</p>
+          <p className="text-2xl font-bold text-gray-800">
+            ₱{(budget.amount + budget.earned).toFixed(2)}
+          </p>
         </div>
 
         {/* Budget Details Grid */}
