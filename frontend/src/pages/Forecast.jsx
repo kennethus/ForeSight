@@ -3,6 +3,7 @@ import axios from "axios";
 import FeatureModal from "../components/FeatureModal";
 import AuthContext from "../context/authProvider";
 import Spinner from "../components/Spinner";
+import { useToast } from "../context/ToastContext";
 
 function classifyAgeGroup(age) {
   if (age < 18) {
@@ -68,6 +69,7 @@ function mapUserJsonToModelInput(userJson) {
 }
 
 export const Forecast = () => {
+  const { showToast } = useToast();
   const [feature, setFeature] = useState(null);
   const { auth } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
@@ -211,13 +213,14 @@ export const Forecast = () => {
         setDateOfForecast(date);
         console.log(savePrediction.data.data);
         setPredictLoading(false);
+        showToast("Budget Suggestion successful!", "success");
       } else {
-        setError("Failed to fetch user and transactions");
+        showToast("Failed to fetch user and transactions", "error");
         setPredictLoading(false);
       }
     } catch (error) {
       console.error("Prediction error:", error);
-      setError("Something went wrong during prediction.");
+      showToast("Something went wrong during prediction.", "error");
       setPredictLoading(false);
     }
   };
@@ -260,9 +263,11 @@ export const Forecast = () => {
         }
       );
 
-      if (createdBudgets.data.success) {
-        alert("Successfully created budgets!");
+      if (createdBudgets.data.success && !createdBudgets.data.failed) {
+        showToast("Action was successful!", "success");
         console.log(createdBudgets.data);
+      } else {
+        showToast("Some budget already exist! Close them first.", "warning");
       }
       setBudgetCreateLoading(false);
     } catch (error) {

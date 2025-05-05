@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
+import { useToast } from "../context/ToastContext";
 
 const AddTransactionModal = ({
   isOpen,
@@ -11,6 +12,7 @@ const AddTransactionModal = ({
   existingTransaction,
 }) => {
   const { auth } = useContext(AuthContext);
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const [budgets, setBudgets] = useState([]);
@@ -147,6 +149,7 @@ const AddTransactionModal = ({
           { withCredentials: true }
         );
         alert("Transaction updated successfully!");
+        // showToast("Transaction updated successfully!", "success");
         onTransactionAdded(editedTransaction.data.data);
       } else {
         const newTransaction = await axios.post(
@@ -163,7 +166,7 @@ const AddTransactionModal = ({
           },
           { withCredentials: true }
         );
-        alert("Transaction added successfully!");
+        showToast("Transaction added successfully!", "success");
         onTransactionAdded(newTransaction.data.data);
         setSubmitLoading(false);
       }
@@ -172,7 +175,7 @@ const AddTransactionModal = ({
       onClose();
     } catch (err) {
       console.error("Error saving transaction:", err.response?.data);
-      alert("Failed to save transaction.");
+      showToast("Failed to save transaction.", "error");
       setSubmitLoading(false);
     }
   };

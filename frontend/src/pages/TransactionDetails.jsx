@@ -5,8 +5,11 @@ import AuthContext from "../context/authProvider";
 import axios from "axios";
 import AddTransactionModal from "../components/AddTransactionModal";
 import Spinner from "../components/Spinner";
+import { useToast } from "../context/ToastContext";
 
 const TransactionDetails = () => {
+  const { showToast } = useToast();
+
   const { auth } = useContext(AuthContext);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -14,7 +17,6 @@ const TransactionDetails = () => {
   const [budgets, setBudgets] = useState([]); // Store budgets
   const [hasClosedBudget, setHasClosedBudget] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
@@ -52,10 +54,13 @@ const TransactionDetails = () => {
           );
           setHasClosedBudget(hasClosed);
         } else {
-          setError("Transaction not found");
+          showToast("Transaction not found", "warning");
         }
       } catch (err) {
-        setError("Error fetching transaction details:", err.response?.message);
+        showToast(
+          "Error fetching transaction details:" + err.response?.message,
+          "error"
+        );
       } finally {
         setLoading(false);
       }
@@ -75,10 +80,14 @@ const TransactionDetails = () => {
           withCredentials: true,
         }
       );
-      alert("Transaction deleted successfully!");
+      showToast("Transaction deleted successfully!", "success");
       navigate(-1);
     } catch (err) {
-      alert("Failed to delete transaction:", err.response?.message);
+      showToast(
+        "Failed to delete transaction:",
+        err.response?.message,
+        "error"
+      );
     }
   };
 
@@ -89,7 +98,6 @@ const TransactionDetails = () => {
       </div>
     );
   }
-  if (error) return <p className="text-center text-red-500 mt-10">{error}</p>;
 
   return (
     <div className="flex flex-col items-center">

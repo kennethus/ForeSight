@@ -2,8 +2,11 @@ import { useState, useContext, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
+import { useToast } from "../context/ToastContext";
 
 const FeatureModal = ({ isOpen, onClose, feature }) => {
+  const { showToast } = useToast();
+
   const { auth } = useContext(AuthContext);
   const isNewFeature = !feature;
   const modalRef = useRef(null);
@@ -74,11 +77,9 @@ const FeatureModal = ({ isOpen, onClose, feature }) => {
             { withCredentials: true }
           );
 
-      alert(
-        isNewFeature ?
-          "Feature added successfully!"
-        : "Feature updated successfully!"
-      );
+      isNewFeature ?
+        showToast("Information added successfully", "success")
+      : showToast("Information updated successfully", "success");
       setIsEditing(false);
       setSubmitLoading(false);
       onClose(response.data.data);

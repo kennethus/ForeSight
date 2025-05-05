@@ -2,8 +2,10 @@ import { useState, useContext, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
+import { useToast } from "../context/ToastContext";
 
 const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
+  const { showToast } = useToast();
   const modalRef = useRef(null);
   const { auth } = useContext(AuthContext);
 
@@ -69,9 +71,10 @@ const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
       }
 
       if (response.data.success) {
-        alert(
-          goal ? "Goal updated successfully!" : "Goal created successfully!"
-        );
+        goal ?
+          showToast("Goal updated successfully!", "success")
+        : showToast("Goal created successfully!", "success");
+
         onGoalUpdated(response.data.data); // Update the parent state
         setSubmitLoading(false);
         onClose();
@@ -142,7 +145,7 @@ const GoalModal = ({ isOpen, onClose, goal, onGoalUpdated }) => {
               htmlFor="endDate"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              End Date
+              Target End Date
             </label>
             <input
               id="endDate"

@@ -3,8 +3,11 @@ import PropTypes from "prop-types";
 import axios from "axios";
 import AuthContext from "../../context/authProvider";
 import Papa from "papaparse";
+import { useToast } from "../../context/ToastContext";
 
 const AddMultipleTransactionsModal = ({ isOpen, onClose, onBulkAdded }) => {
+  const { showToast } = useToast();
+
   const { auth } = useContext(AuthContext);
   const modalRef = useRef(null);
   const [csvFile, setCsvFile] = useState(null);
@@ -73,14 +76,15 @@ const AddMultipleTransactionsModal = ({ isOpen, onClose, onBulkAdded }) => {
               },
             }
           );
-          alert("Transactions uploaded successfully!");
+          showToast("Transactions uploaded successfully!", "success");
           onBulkAdded(response.data.data);
           setCsvFile(null);
           onClose();
         } catch (err) {
           console.error("❌ Bulk upload failed:", err);
-          setErrorMessage(
-            err.response?.data?.message || "Failed to upload transactions."
+          showToast(
+            err.response?.data?.message || "Failed to upload transactions.",
+            "error"
           );
         } finally {
           setUploading(false);
@@ -89,7 +93,7 @@ const AddMultipleTransactionsModal = ({ isOpen, onClose, onBulkAdded }) => {
       error: (err) => {
         console.error("❌ CSV parsing error:", err);
         setUploading(false);
-        setErrorMessage("Error parsing CSV file: " + err.message);
+        showToast("Error parsing CSV file: " + err.message, "error");
       },
     });
   };

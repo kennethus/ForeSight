@@ -5,8 +5,11 @@ import AuthContext from "../context/authProvider";
 import AddBudgetModal from "../components/AddBudgetModal";
 import BudgetRow from "../components/Budgets/BudgetRow";
 import Spinner from "../components/Spinner";
+import { Tooltip } from "react-tooltip"; // ✅ for react-tooltip v5+
 
 const Budgets = () => {
+  const EPSILON = 1e-10;
+
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -51,6 +54,13 @@ const Budgets = () => {
   const handleBudgetAdded = (newBudget) => {
     setBudgets((prevBudgets) => [newBudget, ...prevBudgets]);
   };
+
+  const isOthersZero = budgets.some(
+    (budget) =>
+      budget.name === "Others" &&
+      typeof budget.amount === "number" &&
+      Math.abs(budget.amount + budget.earned) < EPSILON
+  );
 
   if (loading) {
     return (
@@ -116,10 +126,24 @@ const Budgets = () => {
       {budgets.length > 0 && (
         <button
           onClick={() => setIsModalOpen(true)}
-          className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition"
+          className={`fixed bottom-6 right-6 text-white rounded-full shadow-lg transition ${
+            isOthersZero ?
+              "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-500 hover:bg-blue-600"
+          }`}
+          disabled={isOthersZero}
+          data-tooltip-id="addBudgetTooltip"
         >
           + Add Budget
         </button>
+      )}
+
+      {isOthersZero && (
+        <Tooltip
+          id="addBudgetTooltip"
+          place="top"
+          content="Not enough money to create another budget"
+        />
       )}
 
       {/* Add Budget Modal */}

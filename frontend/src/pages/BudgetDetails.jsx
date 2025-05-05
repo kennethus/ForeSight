@@ -5,8 +5,10 @@ import AuthContext from "../context/authProvider";
 import AddBudgetModal from "../components/AddBudgetModal";
 import { HiArrowLeft, HiPencil, HiTrash, HiLockClosed } from "react-icons/hi";
 import Spinner from "../components/Spinner";
+import { useToast } from "../context/ToastContext";
 
 const BudgetDetails = () => {
+  const { showToast } = useToast();
   const { auth } = useContext(AuthContext);
   const { id } = useParams(); // Get budget ID from URL
   const navigate = useNavigate();
@@ -107,17 +109,17 @@ const BudgetDetails = () => {
           { withCredentials: true }
         );
         if (updateOthersResponse.data.success) {
-          alert("Budget deleted successfully!");
+          showToast("Budget deleted successfully!", "success");
           navigate(-1); // Redirect after deletion
         } else {
-          alert("Failed to delete budget.");
+          showToast("Failed to delete budget.", "error");
         }
       } else {
-        alert("Failed to delete budget.");
+        showToast("Failed to delete budget.", "error");
       }
     } catch (err) {
       console.error("Error deleting budget:", err.response?.data);
-      alert("Error deleting budget. Please try again.");
+      showToast("Error deleting budget. Please try again.", "error");
     }
   };
 
@@ -144,8 +146,9 @@ const BudgetDetails = () => {
         );
 
         if (updateOthersResponse.data.success) {
-          alert(
-            "Budget closed successfully! Remaining balance added back to 'Others'."
+          showToast(
+            "Budget closed successfully! Remaining balance added back to 'Others'.",
+            "success"
           );
           setBudget({ ...budget, closed: true }); // Update state to reflect closure
           setOthersBudget({
@@ -153,14 +156,14 @@ const BudgetDetails = () => {
             amount: othersBudget.amount + remainingBalance,
           }); // Update "Others" budget in state
         } else {
-          alert("Failed to update 'Others' budget.");
+          showToast("Failed to update 'Others' budget.", "error");
         }
       } else {
-        alert("Failed to close budget.");
+        showToast("Failed to close budget.", "error");
       }
     } catch (err) {
       console.error("Error closing budget:", err.response?.data);
-      alert("Error closing budget. Please try again.");
+      showToast("Error closing budget. Please try again.", "error");
     }
   };
 

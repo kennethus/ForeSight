@@ -2,10 +2,12 @@ import { useState, useContext, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import AuthContext from "../context/authProvider";
+import { useToast } from "../context/ToastContext";
 
 const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
   const { auth } = useContext(AuthContext);
   const modalRef = useRef(null);
+  const { showToast } = useToast();
 
   const [othersBudget, setOthersBudget] = useState(null);
   const [name, setName] = useState(existingBudget?.name || "");
@@ -104,16 +106,16 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
             { withCredentials: true }
           );
           if (updateOthersResponse.data.success) {
-            alert("Budget updated successfully!");
+            showToast("Budget updated successfully!", "success");
             console.log("SENDING UPDATED BUDGET: ", updatedBudget);
             onBudgetAdded(updatedBudget.data.data);
             setSubmitLoading(false);
           } else {
-            alert("Failed to update 'Others' budget.");
+            showToast("Failed to update 'Others' budget.", "error");
             setSubmitLoading(false);
           }
         } else {
-          alert("Failed to update budget.");
+          showToast("Failed to update budget.", "error");
           setSubmitLoading(false);
         }
       } else {
@@ -140,11 +142,11 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
           { withCredentials: true }
         );
         if (newBudget.data.success) {
-          alert("Budget added successfully!");
+          showToast("Budget added successfully!", "success");
           onBudgetAdded(newBudget.data.data);
           setSubmitLoading(false);
         } else {
-          alert("Failed to create Budget");
+          showToast("Failed to create Budget", "error");
           setSubmitLoading(false);
         }
       }
@@ -155,7 +157,7 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
       console.error("Error saving budget:", err.response?.data.message);
       setErrorMessage(err.response.data.message);
       setSubmitLoading(false);
-      // alert("Failed to save budget.");
+      showToast("Failed to save Budget", "error");
     }
   };
 
@@ -174,7 +176,11 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
           {!existingBudget && (
             <h4 className="text-sm text-center text-gray-500 mb-2">
               You can allocate at most{" "}
-              {othersBudget.amount + othersBudget.earned - othersBudget.spent}{" "}
+              {(
+                othersBudget.amount +
+                othersBudget.earned -
+                othersBudget.spent
+              ).toFixed(2)}{" "}
               for this budget
             </h4>
           )}
@@ -215,7 +221,8 @@ const AddBudgetModal = ({ isOpen, onClose, onBudgetAdded, existingBudget }) => {
                 id="amount"
                 className="input-field"
                 type="number"
-                min="1"
+                min="0.01"
+                step="any"
                 placeholder="Ex: 5000"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
