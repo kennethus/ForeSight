@@ -97,19 +97,25 @@ const SignUp = () => {
       {/* Left Section (Logo & Branding) */}
       <div
         className="w-full lg:w-1/2 bg-blue-900 flex justify-center items-center p-8 
-                   rounded-b-[80%] md:rounded-b-[80%] lg:rounded-none lg:rounded-e-full 
-                   h-[40vh] md:h-[50vh] lg:h-auto"
+               rounded-b-[80%] md:rounded-b-[80%] lg:rounded-none lg:rounded-e-full 
+               h-[40vh] md:h-[50vh] lg:h-auto"
       >
         <div className="text-center">
-          <img src="/logo.png" alt="ForeSight Logo" className="w-40 mx-auto" />
-          <h1 className="text-white text-3xl font-bold mt-4">ForeSight</h1>
+          <img
+            src="/logo.png"
+            alt="ForeSight Logo"
+            className="w-40 mx-auto lg:w-80"
+          />
+          <h1 className="text-white text-3xl font-bold mb-4 mx-auto md:text-4xl lg:text-5xl">
+            ForeSight
+          </h1>
         </div>
       </div>
 
       {/* Right Section (Sign-Up Form) */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 sm:px-12">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 sm:px-12 overflow-y-auto max-h-screen">
         <div className="w-full max-w-md bg-white p-8 rounded-md">
-          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          <h2 className="text-2xl font-bold text-center mt-55 lg:mt-20 xl:mt-0 text-gray-800 mb-6">
             Sign Up
           </h2>
 
@@ -121,71 +127,145 @@ const SignUp = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            />
-
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            />
-
-            <div className="flex flex-row gap-2">
+            {/* Full Name */}
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Full Name
+              </label>
               <input
-                type="number"
-                name="age"
-                placeholder="Age"
+                id="name"
+                type="text"
+                name="name"
+                placeholder="e.g., John Dela Cruz"
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               />
-
-              <select
-                name="sex"
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
             </div>
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            />
+            {/* Username */}
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                name="username"
+                placeholder="e.g., johndelacruz123"
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            />
+            {/* Age & Sex */}
+            <div className="flex flex-row gap-2">
+              <div className="w-full">
+                <label
+                  htmlFor="age"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Age
+                </label>
+                <input
+                  id="age"
+                  type="number"
+                  name="age"
+                  placeholder="e.g., 20"
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="w-full">
+                <label
+                  htmlFor="sex"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Sex
+                </label>
+                <select
+                  id="sex"
+                  name="sex"
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+            </div>
 
-            <input
-              type="number"
-              name="balance"
-              placeholder="Initial Balance"
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            />
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                placeholder="e.g., john@example.com"
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
+            {/* Password */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                name="password"
+                placeholder="Enter a strong password"
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Initial Balance */}
+            <div>
+              <label
+                htmlFor="balance"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Initial Balance
+              </label>
+              <input
+                id="balance"
+                type="number"
+                name="balance"
+                placeholder="₱ e.g., 3000"
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                This is the starting amount in your budget.
+              </p>
+            </div>
+
+            {/* Buttons */}
             <button
               type="submit"
               className="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 rounded-md transition"

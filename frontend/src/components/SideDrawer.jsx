@@ -72,7 +72,7 @@ const SideDrawer = ({ isOpen, setIsOpen }) => {
         >
           {/* Logo & Title */}
           <div className="flex items-center space-x-2 mt-5 mb-12 justify-center">
-            <img src="../../public/logo.png" alt="Logo" className="h-10 w-10" />
+            <img src="/logo.png" alt="Logo" className="h-10 w-10" />
             <h2 className="text-lg font-bold text-white">ForeSight</h2>
           </div>
 

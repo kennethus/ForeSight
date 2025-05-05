@@ -75,12 +75,27 @@ const Goals = () => {
             />
           ))}
         </div>
-      : <h3>You have no financial goals now. Add one!</h3>}
+      : <div className="text-center mt-40 flex flex-col items-center">
+          <div className="text-5xl mb-2">💤</div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            No financial goals yet...
+          </h3>
+          <p className="text-gray-500 mb-4">
+            Start planning your future by adding one!
+          </p>
+          <div className="animate-bounce fixed bottom-25 right-20 text-blue-500 text-3xl mb-2">
+            ↓
+          </div>
+          <p className="fixed bottom-22 right-5 text-sm text-gray-500">
+            Add saving goals here!
+          </p>
+        </div>
+      }
 
       {/* Add Goal Button */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full hover:bg-blue-700"
+        className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full px-4 py-3 shadow-lg hover:bg-blue-700 transition"
       >
         + Add Goal
       </button>

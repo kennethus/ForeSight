@@ -249,6 +249,25 @@ const BudgetDetails = () => {
             <p className="text-gray-500">Earned</p>
             <p className="text-gray-800">₱{budget.earned}</p>
           </div>
+          {(
+            budget.name != "Others" &&
+            new Date(budget.endDate).getFullYear() >= new Date().getFullYear()
+          ) ?
+            <>
+              <div>
+                <p className="text-gray-500">Start Date</p>
+                <p className="text-gray-800">
+                  {new Date(budget.startDate).toLocaleDateString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">End Date</p>
+                <p className="text-gray-800">
+                  {new Date(budget.endDate).toLocaleDateString()}
+                </p>
+              </div>
+            </>
+          : <div></div>}
         </div>
 
         {/* Transactions List */}

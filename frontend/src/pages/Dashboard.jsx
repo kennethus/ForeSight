@@ -191,8 +191,8 @@ const Dashboard = () => {
           <div className="bg-blue-50 p-4 rounded-lg shadow-inner max-h-96 overflow-y-auto">
             <div className="bg-white shadow-md rounded-lg p-6 w-full mx-auto">
               <h3 className="text-md font-semibold">Recent Transactions</h3>
-              <table className="w-full">
-                <tbody className="space-y-4">
+              <div className="w-full">
+                <div className="space-y-4">
                   {transactions.map((transaction) => (
                     <TransactionRow
                       key={transaction._id}
@@ -202,8 +202,8 @@ const Dashboard = () => {
                       }
                     />
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -222,9 +222,15 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-      : <p className="text-gray-500 mt-6 text-center">
-          No transactions yet. Add one to get started!
-        </p>
+      : <div className="text-center mt-20 flex flex-col items-center">
+          <div className="text-5xl mb-3">😪</div>
+          <p className="text-xl font-semibold text-gray-700 mb-2">
+            It’s quiet in here...
+          </p>
+          <p className="text-gray-500 mb-4">
+            Start by adding a transaction to see your dashboard in action!
+          </p>
+        </div>
       }
     </div>
   );

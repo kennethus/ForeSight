@@ -62,7 +62,7 @@ const Budgets = () => {
   if (error) return <p className="error">{error}</p>;
 
   return (
-    <div className="p-6">
+    <div>
       {budgets.length === 0 ?
         <div className="text-center p-6 border border-gray-300 rounded-lg">
           <p className="text-gray-600">
@@ -75,34 +75,40 @@ const Budgets = () => {
             + Create a Budget
           </button>
         </div>
-      : <div className="space-y-8">
+      : <div className="flex flex-col gap-10 mt-6 px-4 mb-4">
           {/* Open Budgets */}
-          <h3 className="text-xl font-medium">Open Budgets</h3>
-          <div className="space-y-4">
-            {budgets
-              .filter((budget) => !budget.closed)
-              .map((budget) => (
-                <BudgetRow
-                  key={budget._id}
-                  budget={budget}
-                  onClick={() => navigate(`/budgets/${budget._id}`)}
-                />
-              ))}
+          <div>
+            <h3 className="text-xl font-medium mb-2">Open Budgets</h3>
+            <div className="space-y-4">
+              {budgets
+                .filter((budget) => !budget.closed)
+                .map((budget) => (
+                  <BudgetRow
+                    key={budget._id}
+                    budget={budget}
+                    onClick={() => navigate(`/budgets/${budget._id}`)}
+                  />
+                ))}
+            </div>
           </div>
 
           {/* Closed Budgets */}
-          <h3 className="text-xl font-medium">Closed Budgets</h3>
-          <div className="space-y-4">
-            {budgets
-              .filter((budget) => budget.closed)
-              .map((budget) => (
-                <BudgetRow
-                  key={budget._id}
-                  budget={budget}
-                  onClick={() => navigate(`/budgets/${budget._id}`)}
-                />
-              ))}
-          </div>
+          {budgets.some((b) => b.closed) && (
+            <div>
+              <h3 className="text-xl font-medium mb-2">Closed Budgets</h3>
+              <div className="space-y-4">
+                {budgets
+                  .filter((budget) => budget.closed)
+                  .map((budget) => (
+                    <BudgetRow
+                      key={budget._id}
+                      budget={budget}
+                      onClick={() => navigate(`/budgets/${budget._id}`)}
+                    />
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
       }
 

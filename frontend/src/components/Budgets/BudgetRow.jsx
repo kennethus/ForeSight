@@ -26,13 +26,14 @@ const BudgetRow = ({ budget, onClick }) => {
 
   return (
     <div
-      onClick={onClick} // ✅ Closed budgets remain clickable
+      onClick={onClick}
       className={`p-4 border-2 rounded-lg cursor-pointer transition hover:bg-gray-50 ${borderColor}`}
     >
       {/* Budget Name & Amount */}
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-2">
         <h3
-          className={`text-lg font-semibold ${isClosed ? "text-gray-500" : "text-black"}`}
+          className={`text-lg font-semibold text-black truncate w-full sm:w-auto sm:max-w-xs ${isClosed ? "text-gray-500" : "text-black"}`}
+          title={budget.name} // Optional: show full name on hover
         >
           {budget.name}
         </h3>
@@ -53,9 +54,13 @@ const BudgetRow = ({ budget, onClick }) => {
       </div>
 
       {/* Progress Bar Section */}
-      <div className="flex justify-between items-center text-gray-600 font-semibold mb-1">
-        <span>₱{spent.toFixed(2).toLocaleString()}</span>
-        <span>₱{remaining.toFixed(2).toLocaleString()}</span>
+      <div className="flex justify-between items-center text-gray-600 font-semibold mb-1 text-sm">
+        <span className="truncate max-w-[45%]">
+          ₱{spent.toFixed(2).toLocaleString()}
+        </span>
+        <span className="truncate max-w-[45%] text-right">
+          ₱{remaining.toFixed(2).toLocaleString()}
+        </span>
       </div>
       <div className="w-full h-3 bg-gray-300 rounded-full overflow-hidden">
         <div

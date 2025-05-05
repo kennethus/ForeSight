@@ -56,12 +56,18 @@ const Login = () => {
       {/* Top Section on Mobile | Left Section on Larger Screens */}
       <div
         className="w-full lg:w-1/2 bg-blue-900 flex justify-center items-center p-8 
-             rounded-b-[80%] md:rounded-b-[80%] lg:rounded-none lg:rounded-e-[100%] 
-             h-[40vh] md:h-[50vh] lg:h-auto"
+                   rounded-b-[80%] md:rounded-b-[80%] lg:rounded-none lg:rounded-e-full 
+                   h-[40vh] md:h-[50vh] lg:h-auto"
       >
         <div className="text-center">
-          <img src="/logo.png" alt="ForeSight Logo" className="w-70 mx-auto" />
-          <h1 className="text-white text-5xl font-bold mt-4">ForeSight</h1>
+          <img
+            src="/logo.png"
+            alt="ForeSight Logo"
+            className="w-40 mx-auto lg:w-80"
+          />{" "}
+          <h1 className="text-white text-3xl font-bold mb-4 mx-auto md:text-4xl lg:text-5xl">
+            ForeSight
+          </h1>{" "}
         </div>
       </div>
 

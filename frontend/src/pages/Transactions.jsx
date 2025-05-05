@@ -141,8 +141,8 @@ const Transactions = () => {
             </button>
           </div>
 
-          <table className="w-full">
-            <tbody className="space-y-4">
+          <div className="w-full">
+            <div className="space-y-4">
               {transactions.map((transaction) => (
                 <TransactionRow
                   key={transaction._id}
@@ -150,10 +150,30 @@ const Transactions = () => {
                   onClick={() => navigate(`/transactions/${transaction._id}`)}
                 />
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </>
-      : <h3>You have no transactions now. Add one!</h3>}
+      : <div className="text-center mt-40 flex flex-col items-center">
+          <div className="text-5xl mb-2">😴</div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            It looks a bit empty here...
+          </h3>
+          <p className="text-gray-500 mb-4">
+            Start by adding your first transaction!
+          </p>
+
+          {!isFabOpen && (
+            <div>
+              <div className="animate-bounce fixed bottom-25 right-24 text-blue-500 text-3xl mb-2">
+                ↓
+              </div>
+              <p className="fixed bottom-22 right-10 text-sm text-gray-500">
+                Add transaction here!
+              </p>
+            </div>
+          )}
+        </div>
+      }
 
       {/* Modals */}
       <AddTransactionModal
@@ -195,7 +215,7 @@ const Transactions = () => {
         )}
         <button
           onClick={() => setIsFabOpen((prev) => !prev)}
-          className="bg-blue-500 text-white px-4 py-3 rounded-full shadow-lg hover:bg-blue-600"
+          className={`bg-blue-500 text-white px-4 py-3 rounded-full shadow-lg hover:bg-blue-600 transition-all`}
         >
           {isFabOpen ?
             <FaAngleDown />

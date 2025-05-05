@@ -107,8 +107,6 @@ export const Forecast = () => {
           if (esPrediction?.dates?.length > 0) {
             const date = new Date(esPrediction.dates[0]);
             setDateOfForecast(date);
-          } else {
-            console.warn("es_prediction or dates is missing in the response");
           }
         }
       } catch (err) {
@@ -264,7 +262,7 @@ export const Forecast = () => {
 
       if (createdBudgets.data.success) {
         alert("Successfully created budgets!");
-        console.log(createdBudgets.data.data);
+        console.log(createdBudgets.data);
       }
       setBudgetCreateLoading(false);
     } catch (error) {
@@ -308,8 +306,10 @@ export const Forecast = () => {
               />
             </svg>
             <h3 className="text-2xl font-bold text-gray-800">
-              Prediction Summary for{" "}
-              {dateOfForecast?.toLocaleString("en-US", { month: "long" })}
+              Prediction Summary{" "}
+              {dateOfForecast ?
+                `for ${dateOfForecast.toLocaleString("en-US", { month: "long" })}`
+              : ""}
             </h3>
           </div>
 
@@ -357,21 +357,22 @@ export const Forecast = () => {
           </div>
 
           {/* Budget Warning */}
-          {predictionResult.prediction_exceed && (
-            <div className="text-red-700 bg-red-50 px-4 py-2 rounded-md border border-red-200 text-sm">
-              ⚠️ Your predicted expenses for this month exceeded your suggested
-              budget (
-              {predictionResult.combined_total ?
-                <span className="font-semibold">
-                  ₱{predictionResult.combined_total.toFixed(2)}
-                </span>
-              : <span className="font-semibold">
-                  ₱{predictionResult.rf_total.toFixed(2)}
-                </span>
-              }
-              ). We’ve adjusted it to help you stay on track.
-            </div>
-          )}
+          {predictionResult.prediction_exceed &&
+            predictionResult.es_success && (
+              <div className="text-red-700 bg-red-50 px-4 py-2 rounded-md border border-red-200 text-sm">
+                ⚠️ Your predicted expenses for this month exceeded your
+                suggested budget (
+                {predictionResult.combined_total ?
+                  <span className="font-semibold">
+                    ₱{predictionResult.combined_total.toFixed(2)}
+                  </span>
+                : <span className="font-semibold">
+                    ₱{predictionResult.rf_total.toFixed(2)}
+                  </span>
+                }
+                ). We’ve adjusted it to help you stay on track.
+              </div>
+            )}
 
           {/* Budget Creation Prompt */}
           <div className="flex justify-center mt-6">
@@ -505,13 +506,30 @@ export const Forecast = () => {
             </div>
           }
         </div>
-      : <div className="text-center text-gray-500">
+      : <div className="text-center mt-16 flex flex-col items-center">
           {!feature ?
-            <p>
-              Add your socio-demographic information so I can suggest a budget
-              for you!
-            </p>
-          : <p>No budget suggestion yet.</p>}
+            <div className="text-center mt-16 flex flex-col items-center">
+              <div className="text-5xl mb-2">🥱</div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                No budget suggestion yet...
+              </h3>
+              <p className="text-gray-500 mb-4">
+                We need some of your information so we can suggest for you!
+              </p>
+              <div className="animate-bounce text-blue-500 text-3xl mb-2">
+                ↓
+              </div>
+            </div>
+          : <div className="text-center mt-16 flex flex-col items-center">
+              <div className="text-5xl mb-2">🥱</div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                No budget suggestion yet...
+              </h3>
+              <p className="text-gray-500 mb-4">
+                Click `Suggest Budget` to start!
+              </p>
+            </div>
+          }
         </div>
       }
 
