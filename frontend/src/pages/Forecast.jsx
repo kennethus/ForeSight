@@ -413,70 +413,70 @@ export const Forecast = () => {
               </p>
 
               {/* R²-based Insight */}
-              {predictionResult.es_prediction.metrics.r2 > 0.5 ?
-                <div className="text-green-700 bg-green-50 px-4 py-2 rounded-md border border-green-200 text-sm">
-                  ✅ Your actual spending last month was close to what we
-                  predicted, so we trusted your past transactions more when
-                  creating this month’s budget.
-                  <span className="ml-2 inline-block relative group align-middle">
-                    <svg
-                      className="w-4 h-4 text-gray-500 cursor-pointer inline"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
-                      />
-                    </svg>
-                    <div className="absolute hidden group-hover:block w-64 text-xs text-white bg-gray-800 p-2 rounded shadow-lg top-6 left-1/2 -translate-x-1/2 z-10">
-                      Your spending was close to our prediction by{" "}
-                      <span className="font-semibold">
-                        {(
-                          predictionResult.es_prediction.metrics.r2 * 100
-                        ).toFixed(0)}
-                        %
-                      </span>
-                      <br />A higher percentage means your actual spending
-                      closely matched our forecast.
-                    </div>
-                  </span>
-                </div>
-              : <div className="text-yellow-700 bg-yellow-50 px-4 py-2 rounded-md border border-yellow-200 text-sm">
-                  ⚠️ Your actual spending last month was quite different from
-                  what we predicted, so we relied more on your profile details
-                  to estimate this month’s budget.
-                  <span className="ml-2 inline-block relative group align-middle">
-                    <svg
-                      className="w-4 h-4 text-gray-500 cursor-pointer inline"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
-                      />
-                    </svg>
-                    <div className="absolute hidden group-hover:block w-64 text-xs text-white bg-gray-800 p-2 rounded shadow-lg top-6 left-1/2 -translate-x-1/2 z-10">
-                      Your spending was close to our prediction by{" "}
-                      <span className="font-semibold">
-                        {(
-                          predictionResult.es_prediction.metrics.r2 * 100
-                        ).toFixed(0)}
-                        %
-                      </span>
-                      <br />A lower percentage means your actual expenses were
-                      far from what we forecasted.
-                    </div>
-                  </span>
-                </div>
-              }
+              {predictionResult.es_prediction.metrics.r2 &&
+                (predictionResult.es_prediction.metrics.r2 > 0.5 ?
+                  <div className="text-green-700 bg-green-50 px-4 py-2 rounded-md border border-green-200 text-sm">
+                    ✅ Your actual spending last month was close to what we
+                    predicted, so we trusted your past transactions more when
+                    creating this month’s budget.
+                    <span className="ml-2 inline-block relative group align-middle">
+                      <svg
+                        className="w-4 h-4 text-gray-500 cursor-pointer inline"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
+                        />
+                      </svg>
+                      <div className="absolute hidden group-hover:block w-64 text-xs text-white bg-gray-800 p-2 rounded shadow-lg top-6 left-1/2 -translate-x-1/2 z-10">
+                        Your spending was close to our prediction by{" "}
+                        <span className="font-semibold">
+                          {(
+                            predictionResult.es_prediction.metrics.r2 * 100
+                          ).toFixed(0)}
+                          %
+                        </span>
+                        <br />A higher percentage means your actual spending
+                        closely matched our forecast.
+                      </div>
+                    </span>
+                  </div>
+                : <div className="text-yellow-700 bg-yellow-50 px-4 py-2 rounded-md border border-yellow-200 text-sm">
+                    ⚠️ Your actual spending last month was quite different from
+                    what we predicted, so we relied more on your profile details
+                    to estimate this month’s budget.
+                    <span className="ml-2 inline-block relative group align-middle">
+                      <svg
+                        className="w-4 h-4 text-gray-500 cursor-pointer inline"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
+                        />
+                      </svg>
+                      <div className="absolute hidden group-hover:block w-64 text-xs text-white bg-gray-800 p-2 rounded shadow-lg top-6 left-1/2 -translate-x-1/2 z-10">
+                        Your spending was close to our prediction by{" "}
+                        <span className="font-semibold">
+                          {(
+                            predictionResult.es_prediction.metrics.r2 * 100
+                          ).toFixed(0)}
+                          %
+                        </span>
+                        <br />A lower percentage means your actual expenses were
+                        far from what we forecasted.
+                      </div>
+                    </span>
+                  </div>)}
 
               {/* Adjustment Info */}
               {predictionResult.adjustment_info &&
