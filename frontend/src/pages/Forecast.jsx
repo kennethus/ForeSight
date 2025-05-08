@@ -263,8 +263,14 @@ export const Forecast = () => {
         }
       );
 
-      if (createdBudgets.data.success && !createdBudgets.data.failed) {
-        showToast("Action was successful!", "success");
+      console.log(createdBudgets.data.success);
+      console.log(createdBudgets.data.failed);
+
+      if (
+        createdBudgets.data.success &&
+        createdBudgets.data.failed.length === 0
+      ) {
+        showToast("Budget creation was successful!", "success");
         console.log(createdBudgets.data);
       } else {
         showToast("Some budget already exist! Close them first.", "warning");
