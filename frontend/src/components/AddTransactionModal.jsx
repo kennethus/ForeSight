@@ -148,8 +148,7 @@ const AddTransactionModal = ({
           },
           { withCredentials: true }
         );
-        alert("Transaction updated successfully!");
-        // showToast("Transaction updated successfully!", "success");
+        showToast("Transaction updated successfully!", "success");
         onTransactionAdded(editedTransaction.data.data);
       } else {
         const newTransaction = await axios.post(

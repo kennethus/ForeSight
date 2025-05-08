@@ -18,6 +18,7 @@ const SignUp = () => {
 
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   // Handle input change
   const handleChange = (e) => {
@@ -32,6 +33,7 @@ const SignUp = () => {
     e.preventDefault();
     setMessage(null);
     setError(null);
+    setSubmitLoading(true);
 
     try {
       console.log("Submitting Form Data:", formData);
@@ -80,15 +82,19 @@ const SignUp = () => {
 
         if (initialBudgetResponse?.data?.success === true) {
           navigate("/dashboard");
+          setSubmitLoading(false);
         }
       } else {
         console.log("Response success is false:", response.data);
+        setSubmitLoading(false);
       }
 
       setMessage(response.data.message);
+      setSubmitLoading(false);
     } catch (err) {
       console.error("API Error:", err.response?.data || err.message);
       setError(err.response?.data?.message);
+      setSubmitLoading(false);
     }
   };
 
@@ -270,7 +276,7 @@ const SignUp = () => {
               type="submit"
               className="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 rounded-md transition"
             >
-              Register
+              {submitLoading ? "Loading..." : "Register"}
             </button>
 
             <button

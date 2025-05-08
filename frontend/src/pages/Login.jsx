@@ -13,6 +13,7 @@ const Login = () => {
   const [user, setUser] = useState("");
   const [pwd, setPwd] = useState("");
   const [errMsg, setErrMsg] = useState("");
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   useEffect(() => {
     userRef.current.focus();
@@ -30,6 +31,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitLoading(true);
 
     try {
       const response = await axios.post(
@@ -43,9 +45,13 @@ const Login = () => {
 
       if (response.data.success) {
         setAuth(response.data.user);
+        setSubmitLoading(false);
+
         navigate("/dashboard");
       }
     } catch (err) {
+      setSubmitLoading(false);
+
       setErrMsg(err.response?.data?.message || "Login failed");
       errRef.current.focus();
     }
@@ -118,7 +124,7 @@ const Login = () => {
             />
 
             <button className="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 rounded-md transition">
-              Log In
+              {submitLoading ? "Loading..." : "Log In"}
             </button>
           </form>
 
