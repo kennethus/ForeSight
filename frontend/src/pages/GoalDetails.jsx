@@ -7,6 +7,7 @@ import "react-circular-progressbar/dist/styles.css";
 import { HiArrowLeft, HiPencil } from "react-icons/hi";
 import GoalModal from "../components/GoalModal"; // Ensure correct path
 import Spinner from "../components/Spinner";
+import ConfettiExplosion from "react-confetti-explosion";
 
 const GoalDetails = () => {
   const { auth } = useContext(AuthContext);
@@ -105,6 +106,11 @@ const GoalDetails = () => {
 
   return (
     <div className="flex justify-center">
+      {savedPercentage >= 100 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <ConfettiExplosion />
+        </div>
+      )}
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
         {/* Header: Goal Name & Target Amount */}
         <div className="flex items-center justify-between pb-3">

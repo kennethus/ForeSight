@@ -14,35 +14,34 @@ import GoalDetails from "./pages/GoalDetails";
 import UserProfile from "./pages/Profile";
 import { Forecast } from "./pages/Forecast";
 import SignUp from "./pages/SignUp";
-
+import Faqs from "./pages/Faqs";
 
 function App() {
   return (
-      <Router>
-          <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/sign-up" element={<SignUp />} />
-              <Route element={<ProtectedRoute />}>
-                    <Route element={<DashboardLayout />}>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/profile" element={<UserProfile />} />
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/sign-up" element={<SignUp />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<UserProfile />} />
 
-                        <Route path="/transactions" element={<Transactions />} />
-                            <Route path="/transactions/:id" element={<TransactionDetails />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/transactions/:id" element={<TransactionDetails />} />
 
-                        <Route path="/budgets" element={<Budgets />} />
-                            <Route path="/budgets/:id" element={<BudgetDetails />} />
+            <Route path="/budgets" element={<Budgets />} />
+            <Route path="/budgets/:id" element={<BudgetDetails />} />
 
-                        <Route path="/financial-goals" element={<Goals />} />
-                            <Route path="/financial-goals/:id" element={<GoalDetails />} />
+            <Route path="/financial-goals" element={<Goals />} />
+            <Route path="/financial-goals/:id" element={<GoalDetails />} />
 
-                        <Route path="/forecast" element={<Forecast />} />
-
-
-                    </Route>
-              </Route>
-          </Routes>
-      </Router>
+            <Route path="/forecast" element={<Forecast />} />
+            <Route path="/faqs" element={<Faqs />} />
+          </Route>
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 

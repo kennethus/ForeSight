@@ -210,7 +210,11 @@ export const Forecast = () => {
         setPredictionResult(savePrediction.data.data);
 
         const date = new Date(savePrediction.data.data.es_prediction.dates[0]);
-        setDateOfForecast(date);
+
+        if (!isNaN(date.getTime())) {
+          setDateOfForecast(date);
+        }
+
         console.log(savePrediction.data.data);
         setPredictLoading(false);
         showToast("Budget Suggestion successful!", "success");

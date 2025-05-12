@@ -11,6 +11,7 @@ import {
   FaBullseye,
   FaBars,
   FaMoneyBill,
+  FaQuestionCircle,
 } from "react-icons/fa";
 
 const SideDrawer = ({ isOpen, setIsOpen }) => {
@@ -92,6 +93,7 @@ const SideDrawer = ({ isOpen, setIsOpen }) => {
                 text="Savings"
               />
               <NavItem to="/forecast" icon={<FaChartLine />} text="Forecast" />
+              <NavItem to="/faqs" icon={<FaQuestionCircle />} text="FAQs" />
             </nav>
           </div>
 

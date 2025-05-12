@@ -69,6 +69,29 @@ const TransactionDetails = () => {
     fetchTransactionDetails();
   }, [id]);
 
+  const updateBudget = async (updatedTransaction) => {
+    const budgetsResponse = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/transaction-budget/get-budgets`,
+      {
+        params: { transactionId: transaction._id },
+        withCredentials: true,
+      }
+    );
+
+    if (budgetsResponse.data.success) {
+      setTransaction(updatedTransaction);
+      setBudgets(budgetsResponse.data.data); // Store budgets
+
+      // Check if any related budget is closed
+      const hasClosed = budgetsResponse.data.data.some(
+        (budgetRel) => budgetRel.budgetId.closed
+      );
+      setHasClosedBudget(hasClosed);
+    } else {
+      showToast("Transaction not found", "warning");
+    }
+  };
+
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this transaction?"))
       return;
@@ -211,7 +234,7 @@ const TransactionDetails = () => {
           <AddTransactionModal
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
-            onTransactionAdded={setTransaction}
+            onTransactionAdded={updateBudget}
             existingTransaction={transaction}
           />
         )}

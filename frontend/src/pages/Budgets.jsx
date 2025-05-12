@@ -52,7 +52,19 @@ const Budgets = () => {
   }, [auth?._id]);
 
   const handleBudgetAdded = (newBudget) => {
-    setBudgets((prevBudgets) => [newBudget, ...prevBudgets]);
+    setBudgets((prevBudgets) => {
+      const updatedBudgets = prevBudgets.map((budget) => {
+        if (budget.name === "Others") {
+          return {
+            ...budget,
+            amount: budget.amount - newBudget.amount,
+          };
+        }
+        return budget;
+      });
+
+      return [newBudget, ...updatedBudgets];
+    });
   };
 
   const isOthersZero = budgets.some(
